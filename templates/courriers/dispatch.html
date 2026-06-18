@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}{{ courrier.numero }} – GED{% endblock %}
+{% block breadcrumb %}<li class="breadcrumb-item"><a href="{% url 'courriers:liste' %}" class="text-decoration-none">Courriers</a></li><li class="breadcrumb-item"><a href="{% url 'courriers:detail' courrier.pk %}" class="text-decoration-none">{{ courrier.numero }}</a></li><li class="breadcrumb-item active">{% if 'dispatch' == 'dispatch' %}Dispatch{% elif 'dispatch' == 'instruction' %}Instruction{% else %}Modifier{% endif %}</li>{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+      <h1 class="h4 fw-bold text-primary-ged mb-0">
+        {% if 'dispatch' == 'dispatch' %}<i class="bi bi-send-fill me-2"></i>Dispatcher le courrier
+        {% elif 'dispatch' == 'instruction' %}<i class="bi bi-pencil-square me-2"></i>Donner une instruction
+        {% else %}<i class="bi bi-pencil me-2"></i>Modifier le courrier{% endif %}
+      </h1>
+      <a href="{% url 'courriers:detail' courrier.pk %}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left me-1"></i>Retour</a>
+    </div>
+    <div class="alert alert-primary d-flex gap-3 align-items-start mb-4">
+      <i class="bi bi-envelope-paper-fill fs-5 flex-shrink-0"></i>
+      <div><strong class="d-block">{{ courrier.numero }}</strong><span class="small">{{ courrier.objet|truncatechars:100 }}</span><br><span class="badge bg-{{ courrier.statut.couleur }} mt-1">{{ courrier.statut.libelle }}</span> <span class="badge bg-{{ courrier.priorite.couleur }} mt-1">{{ courrier.priorite.libelle }}</span></div>
+    </div>
+    <div class="card-ged">
+      <div class="card-header"><span class="form-section-title"><i class="bi bi-file-earmark-text-fill me-1"></i>Fiche de transmission</span></div>
+      <div class="card-body">
+        <form method="post" novalidate>
+          {% csrf_token %}
+          <div class="row g-4">
+            <div class="col-12">
+              <div class="alert alert-secondary py-3">
+                <div class="row g-2">
+                  <div class="col-md-4"><strong>Origine</strong><br>{{ request.user.service.nom }}</div>
+                  <div class="col-md-4"><strong>Courrier</strong><br>{{ courrier.numero }}</div>
+                  <div class="col-md-4"><strong>Objet</strong><br>{{ courrier.objet|truncatechars:70 }}</div>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-lg-6">
+              <div class="card border-secondary mb-3">
+                <div class="card-header bg-white"><strong>Destinataires</strong></div>
+                <div class="card-body">
+                  {{ form.destinataire }}
+                  {% if form.destinataire.errors %}<div class="text-danger small mt-2">{{ form.destinataire.errors.0 }}</div>{% endif %}
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-lg-6">
+              <div class="card border-secondary mb-3">
+                <div class="card-header bg-white"><strong>Directions / Services</strong></div>
+                <div class="card-body">
+                  {{ form.service_destinataire }}
+                  {% if form.service_destinataire.errors %}<div class="text-danger small mt-2">{{ form.service_destinataire.errors.0 }}</div>{% endif %}
+                </div>
+              </div>
+            </div>
+            <div class="col-12">
+              <div class="mb-3">
+                <label class="form-label small fw-semibold">{{ form.pour.label }}</label>
+                {{ form.pour }}
+                <datalist id="pour-options">
+                  <option value="Suite à donner"></option>
+                  <option value="M'en parler"></option>
+                  <option value="Y prendre part"></option>
+                  <option value="Prendre RDV"></option>
+                  <option value="Information"></option>
+                  <option value="Élaborer TDR"></option>
+                  <option value="Élaborer Plan d’Action"></option>
+                  <option value="Préparer Projet de Budget"></option>
+                  <option value="Dispositions à prendre"></option>
+                  <option value="Attribution"></option>
+                  <option value="Préparation projet de réponse"></option>
+                  <option value="Large diffusion"></option>
+                  <option value="Classement"></option>
+                  <option value="Garder en Instance"></option>
+                  <option value="Préparer réunion de partage"></option>
+                  <option value="Études et Observations"></option>
+                </datalist>
+                {% if form.pour.errors %}<div class="text-danger small mt-1">{{ form.pour.errors.0 }}</div>{% endif %}
+              </div>
+            </div>
+            <div class="col-12">
+              <div class="mb-3">
+                <label class="form-label small fw-semibold">{{ form.commentaire.label }}</label>
+                {{ form.commentaire }}
+                {% if form.commentaire.help_text %}<div class="form-text">{{ form.commentaire.help_text }}</div>{% endif %}
+                {% if form.commentaire.errors %}<div class="text-danger small mt-1">{{ form.commentaire.errors.0 }}</div>{% endif %}
+              </div>
+            </div>
+            <div class="col-12">
+              <div class="mb-3">
+                <label class="form-label small fw-semibold">{{ form.observations.label }}</label>
+                {{ form.observations }}
+                {% if form.observations.help_text %}<div class="form-text">{{ form.observations.help_text }}</div>{% endif %}
+                {% if form.observations.errors %}<div class="text-danger small mt-1">{{ form.observations.errors.0 }}</div>{% endif %}
+              </div>
+            </div>
+          </div>
+          {% if form.non_field_errors %}<div class="alert alert-danger small py-2">{{ form.non_field_errors.0 }}</div>{% endif %}
+          <div class="d-flex gap-2 justify-content-end mt-4">
+            <a href="{% url 'courriers:detail' courrier.pk %}" class="btn btn-outline-secondary">Annuler</a>
+            <button type="submit" class="btn btn-primary fw-semibold"><i class="bi bi-send me-2"></i>Dispatcher</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

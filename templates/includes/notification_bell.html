@@ -1,0 +1,37 @@
+{% load static %}
+
+<!-- Cloche de Notifications -->
+<div id="notification-bell-container" class="notification-bell-wrapper">
+    <button id="notification-bell-icon" type="button" title="Notifications" aria-label="Notifications">
+        <i class="bi bi-bell"></i>
+        <span id="notification-count-badge" class="badge">0</span>
+    </button>
+    
+    <!-- Dropdown Menu -->
+    <div id="notification-dropdown-menu" class="notification-dropdown-menu">
+        <!-- Header -->
+        <div class="notification-dropdown-header">
+            <h6>
+                <i class="bi bi-bell-fill me-2"></i>Notifications
+            </h6>
+            <button id="mark-all-as-read-btn" type="button" title="Marquer tout comme lu">
+                <i class="bi bi-check2-all"></i> Tout lu
+            </button>
+        </div>
+        
+        <!-- Liste des notifications -->
+        <div id="notifications-list" class="notifications-list">
+            <div class="notification-empty text-center py-4 text-muted">
+                <i class="bi bi-hourglass-split"></i>
+                <p>Chargement...</p>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="notification-dropdown-footer">
+            <a href="{% url 'dashboard:accueil' %}" class="view-all-link">
+                <i class="bi bi-arrow-right"></i> Voir toutes les notifications
+            </a>
+        </div>
+    </div>
+</div>

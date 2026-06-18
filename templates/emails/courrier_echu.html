@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Courrier échu - GED Courriers</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; background-color: #f5f5f5; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 0 auto; background-color: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .header { background: linear-gradient(135deg, #c53030 0%, #7c2d12 100%); color: white; padding: 30px; text-align: center; }
+        .header h1 { margin: 0; font-size: 24px; }
+        .header p { margin: 5px 0 0 0; font-size: 14px; opacity: 0.9; }
+        .content { padding: 30px; }
+        .alert-box { background-color: #fff5f5; border: 2px solid #fc8181; border-radius: 4px; padding: 15px; margin: 20px 0; }
+        .alert-box h3 { color: #c53030; margin-top: 0; }
+        .courrier-info { background-color: #f9f9f9; border-left: 4px solid #fc8181; padding: 15px; margin: 20px 0; border-radius: 4px; }
+        .info-row { display: flex; justify-content: space-between; margin: 10px 0; font-size: 14px; }
+        .info-label { font-weight: 600; color: #1B4332; min-width: 120px; }
+        .info-value { color: #666; }
+        .action-button { display: inline-block; background: linear-gradient(135deg, #c53030 0%, #7c2d12 100%); color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; margin: 20px 0; font-weight: 600; }
+        .action-button:hover { opacity: 0.9; }
+        .footer { background-color: #f5f5f5; padding: 20px; text-align: center; font-size: 12px; color: #666; border-top: 1px solid #eee; }
+        .footer p { margin: 5px 0; }
+        .divider { height: 1px; background-color: #eee; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>⚠️ COURRIER ÉCHU</h1>
+            <p>Gestion Électronique des Courriers - MINTRANSPORT</p>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            <p>Bonjour <strong>{{ utilisateur.prenom }} {{ utilisateur.nom }}</strong>,</p>
+
+            <!-- Alert Box -->
+            <div class="alert-box">
+                <h3>🚨 ACTION REQUISE</h3>
+                <p>Un courrier en votre charge a <strong>dépassé sa date limite</strong>.</p>
+                <p style="margin: 10px 0 0 0; font-size: 14px;">
+                    <strong>Délai dépassé : {{ jours_retard }} jour(s)</strong>
+                </p>
+            </div>
+
+            <!-- Courrier Details -->
+            <div class="courrier-info">
+                <h3 style="margin-top: 0; color: #c53030;">📋 Détails du Courrier</h3>
+                
+                <div class="info-row">
+                    <span class="info-label">Numéro :</span>
+                    <span class="info-value"><strong>{{ courrier.numero }}</strong></span>
+                </div>
+                
+                <div class="info-row">
+                    <span class="info-label">Objet :</span>
+                    <span class="info-value">{{ courrier.objet }}</span>
+                </div>
+                
+                <div class="info-row">
+                    <span class="info-label">Expéditeur :</span>
+                    <span class="info-value">{{ courrier.expediteur.nom }}</span>
+                </div>
+                
+                <div class="info-row">
+                    <span class="info-label">Type :</span>
+                    <span class="info-value">{{ courrier.type_courrier.libelle }}</span>
+                </div>
+                
+                <div class="info-row">
+                    <span class="info-label">Priorité :</span>
+                    <span class="info-value">{{ courrier.priorite.libelle }}</span>
+                </div>
+
+                <div class="info-row">
+                    <span class="info-label">Délai :</span>
+                    <span class="info-value" style="color: #c53030; font-weight: bold;">{{ courrier.date_echeance|date:"d/m/Y" }} ❌</span>
+                </div>
+
+                <div class="info-row">
+                    <span class="info-label">Statut :</span>
+                    <span class="info-value">{{ courrier.statut.libelle }}</span>
+                </div>
+            </div>
+
+            <!-- Call to Action -->
+            <div style="text-align: center;">
+                <a href="{{ request.build_absolute_uri }}/courriers/{{ courrier.id }}/" class="action-button">
+                    👁️ Traiter immédiatement
+                </a>
+            </div>
+
+            <div class="divider"></div>
+
+            <p style="font-size: 13px; color: #666; background-color: #fff9e6; padding: 12px; border-radius: 4px;">
+                <strong>⚠️ Priorité Élevée :</strong> Veuillez traiter ce courrier sans délai. 
+                Il a dépassé sa date limite de {{ jours_retard }} jour(s).
+            </p>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p><strong>GED Courriers 🇳🇪</strong> | Ministère des Transports et de l'Aviation Civile</p>
+            <p>Ne répondez pas à cet email. Il a été envoyé automatiquement par le système.</p>
+            <p style="margin-top: 10px; font-size: 11px; opacity: 0.7;">© 2026 MINTRANSPORT. Tous droits réservés.</p>
+        </div>
+    </div>
+</body>
+</html>

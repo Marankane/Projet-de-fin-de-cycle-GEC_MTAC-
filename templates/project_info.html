@@ -1,0 +1,526 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content_public %}
+<style>
+  body {
+    background: linear-gradient(135deg, #E85D04 0%, #1B4332 100%);
+    min-height: 100vh;
+    padding: 2rem 0;
+  }
+
+  .info-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 1rem;
+  }
+
+  .page-header {
+    text-align: center;
+    color: white;
+    margin-bottom: 3rem;
+    animation: slideDown 0.6s ease-out;
+  }
+
+  .page-header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+  }
+
+  .page-header p {
+    font-size: 1.1rem;
+    opacity: 0.9;
+  }
+
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3rem;
+  }
+
+  .info-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+    animation: cardEnter 0.6s ease-out both;
+  }
+
+  @keyframes cardEnter {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .info-card:nth-child(2) {
+    animation-delay: 0.1s;
+  }
+
+  .info-card:nth-child(3) {
+    animation-delay: 0.2s;
+  }
+
+  .info-card:nth-child(4) {
+    animation-delay: 0.3s;
+  }
+
+  .info-card:nth-child(5) {
+    animation-delay: 0.4s;
+  }
+
+  .info-card:nth-child(6) {
+    animation-delay: 0.5s;
+  }
+
+  .info-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  }
+
+  .card-header {
+    background: linear-gradient(135deg, #E85D04 0%, #1B4332 100%);
+    color: white;
+    padding: 1.5rem;
+    font-weight: 600;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+  }
+
+  .card-header i {
+    font-size: 1.4rem;
+  }
+
+  .card-body {
+    padding: 1.5rem;
+    color: #333;
+    line-height: 1.6;
+  }
+
+  .card-body h3 {
+    color: #1B4332;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.8rem;
+  }
+
+  .card-body p {
+    margin-bottom: 0.8rem;
+    font-size: 0.95rem;
+  }
+
+  .card-body ul {
+    margin-left: 1.5rem;
+    margin-bottom: 0.8rem;
+  }
+
+  .card-body li {
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+  }
+
+  .badge-pill {
+    display: inline-block;
+    background: #E85D04;
+    color: white;
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-right: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .role-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+  }
+
+  .role-table th {
+    background: #f5f5f5;
+    padding: 0.8rem;
+    text-align: left;
+    font-weight: 600;
+    color: #1B4332;
+    border-bottom: 2px solid #E85D04;
+  }
+
+  .role-table td {
+    padding: 0.8rem;
+    border-bottom: 1px solid #eee;
+  }
+
+  .role-table tr:hover {
+    background: #f9f9f9;
+  }
+
+  .tech-badge {
+    display: inline-block;
+    background: #f0f0f0;
+    border-left: 4px solid #E85D04;
+    padding: 0.5rem 0.8rem;
+    margin-bottom: 0.5rem;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #1B4332;
+  }
+
+  .workflow-step {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+  }
+
+  .workflow-number {
+    background: #E85D04;
+    color: white;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    margin-right: 1rem;
+    flex-shrink: 0;
+  }
+
+  .workflow-content h4 {
+    color: #1B4332;
+    margin-bottom: 0.3rem;
+    font-size: 0.95rem;
+  }
+
+  .workflow-content p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: #666;
+  }
+
+  .feature-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.8rem;
+  }
+
+  .feature-item {
+    display: flex;
+    align-items: start;
+    gap: 0.5rem;
+  }
+
+  .feature-item i {
+    color: #E85D04;
+    font-weight: bold;
+    margin-top: 0.2rem;
+  }
+
+  .back-btn {
+    display: inline-block;
+    margin-bottom: 2rem;
+    padding: 0.7rem 1.5rem;
+    background: white;
+    color: #1B4332;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+  }
+
+  .back-btn:hover {
+    transform: translateX(-5px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  }
+
+  .full-width-card {
+    grid-column: 1 / -1;
+  }
+</style>
+
+<div class="info-container">
+  <!-- En-tête -->
+  <a href="{% url 'accounts:connexion' %}" class="back-btn">
+    <i class="bi bi-arrow-left me-2"></i>Retour à la connexion
+  </a>
+
+  <div class="page-header">
+    <h1>🏗️ GED Courrier</h1>
+    <p>Plateforme de Gestion Électronique des Courriers - MINTRANSPORT Niger</p>
+  </div>
+
+  <!-- Grille de cartes -->
+  <div class="cards-grid">
+
+    <!-- Card 1: Architecture Générale -->
+    <div class="info-card">
+      <div class="card-header">
+        <i class="bi bi-building"></i>
+        Architecture Générale
+      </div>
+      <div class="card-body">
+        <p>Une <strong>plateforme Django</strong> complète pour gérer le cycle de vie des courriers administratifs :</p>
+        <ul>
+          <li>Interface web sécurisée et responsive</li>
+          <li>Base de données PostgreSQL robuste</li>
+          <li>API REST avec JWT</li>
+          <li>Système de rôles et permissions</li>
+          <li>Journal d'audit immuable</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Card 2: 5 Rôles Utilisateurs -->
+    <div class="info-card">
+      <div class="card-header">
+        <i class="bi bi-people-fill"></i>
+        5 Rôles Utilisateurs
+      </div>
+      <div class="card-body">
+        <table class="role-table">
+          <thead>
+            <tr>
+              <th>Rôle</th>
+              <th>Fonction</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Agent Courrier</strong></td>
+              <td>Reçoit, scanne, enregistre</td>
+            </tr>
+            <tr>
+              <td><strong>Secrétaire</strong></td>
+              <td>Consultation, répartition</td>
+            </tr>
+            <tr>
+              <td><strong>Chef Service</strong></td>
+              <td>Instructions, validation</td>
+            </tr>
+            <tr>
+              <td><strong>Directeur</strong></td>
+              <td>Vision globale, stats</td>
+            </tr>
+            <tr>
+              <td><strong>Administrateur</strong></td>
+              <td>Gestion complète</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Card 3: Workflow Métier -->
+    <div class="info-card full-width-card">
+      <div class="card-header">
+        <i class="bi bi-diagram-3"></i>
+        Workflow Métier (3 Validations)
+      </div>
+      <div class="card-body">
+        <p style="margin-bottom: 1.2rem;"><strong>Un courrier traverse 3 validations avant clôture :</strong></p>
+        
+        <div class="workflow-step">
+          <div class="workflow-number">1</div>
+          <div class="workflow-content">
+            <h4>Agent Courrier → SGA</h4>
+            <p>Enregistrement + scan du courrier physique</p>
+          </div>
+        </div>
+
+        <div class="workflow-step">
+          <div class="workflow-number">2</div>
+          <div class="workflow-content">
+            <h4>SGA → SG</h4>
+            <p>Avis du Secrétaire Général Adjoint (positif/négatif)</p>
+          </div>
+        </div>
+
+        <div class="workflow-step">
+          <div class="workflow-number">3</div>
+          <div class="workflow-content">
+            <h4>SG → Ministre</h4>
+            <p>Avis du Secrétaire Général (positif/négatif)</p>
+          </div>
+        </div>
+
+        <div class="workflow-step">
+          <div class="workflow-number">4</div>
+          <div class="workflow-content">
+            <h4>Ministre → Clôture</h4>
+            <p>Décision finale et clôture du courrier</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 4: Modèles de Données -->
+    <div class="info-card">
+      <div class="card-header">
+        <i class="bi bi-database"></i>
+        Modèles de Données
+      </div>
+      <div class="card-body">
+        <h3>📋 Courrier (Cœur du système)</h3>
+        <ul>
+          <li>Numéro auto : ENT-2026-00001</li>
+          <li>Sens : Entrant/Sortant/Interne</li>
+          <li>Priorité et statut</li>
+          <li>Workflow SGA → SG → Ministre</li>
+        </ul>
+
+        <h3 style="margin-top: 1rem;">👤 Utilisateur</h3>
+        <ul>
+          <li>Email unique</li>
+          <li>Rôle + Service</li>
+          <li>Audit des connexions</li>
+        </ul>
+
+        <h3 style="margin-top: 1rem;">📝 Mouvement (Audit)</h3>
+        <ul>
+          <li>Immuable et traçable</li>
+          <li>Enregistre toutes actions</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Card 5: Stack Technologique -->
+    <div class="info-card">
+      <div class="card-header">
+        <i class="bi bi-code-square"></i>
+        Stack Technologique
+      </div>
+      <div class="card-body">
+        <div class="tech-badge"><strong>Framework :</strong> Django 5.0.6</div>
+        <div class="tech-badge"><strong>BD :</strong> PostgreSQL 14+</div>
+        <div class="tech-badge"><strong>API :</strong> Django REST + JWT</div>
+        <div class="tech-badge"><strong>Frontend :</strong> Bootstrap + Django Templates</div>
+        <div class="tech-badge"><strong>OCR/IA :</strong> Tesseract + PyPDFium2</div>
+        <div class="tech-badge"><strong>Async :</strong> Celery + Redis</div>
+        <div class="tech-badge"><strong>Storage :</strong> WhiteNoise</div>
+      </div>
+    </div>
+
+    <!-- Card 6: Fonctionnalités Principales -->
+    <div class="info-card">
+      <div class="card-header">
+        <i class="bi bi-check2-circle"></i>
+        Fonctionnalités Principales
+      </div>
+      <div class="card-body">
+        <div class="feature-list">
+          <div class="feature-item">
+            <i class="bi bi-check-circle-fill"></i>
+            <span>Gestion complète courriers</span>
+          </div>
+          <div class="feature-item">
+            <i class="bi bi-check-circle-fill"></i>
+            <span>Numérotation automatique</span>
+          </div>
+          <div class="feature-item">
+            <i class="bi bi-check-circle-fill"></i>
+            <span>Upload + OCR</span>
+          </div>
+          <div class="feature-item">
+            <i class="bi bi-check-circle-fill"></i>
+            <span>Workflow multi-étapes</span>
+          </div>
+          <div class="feature-item">
+            <i class="bi bi-check-circle-fill"></i>
+            <span>Dispatch simple/massif</span>
+          </div>
+          <div class="feature-item">
+            <i class="bi bi-check-circle-fill"></i>
+            <span>Système de rôles</span>
+          </div>
+          <div class="feature-item">
+            <i class="bi bi-check-circle-fill"></i>
+            <span>Audit trail immuable</span>
+          </div>
+          <div class="feature-item">
+            <i class="bi bi-check-circle-fill"></i>
+            <span>Gestion des délais</span>
+          </div>
+          <div class="feature-item">
+            <i class="bi bi-check-circle-fill"></i>
+            <span>API REST sécurisée</span>
+          </div>
+          <div class="feature-item">
+            <i class="bi bi-check-circle-fill"></i>
+            <span>Tableaux de bord</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 7: Organisation du Code -->
+    <div class="info-card full-width-card">
+      <div class="card-header">
+        <i class="bi bi-folder-structure"></i>
+        Organisation du Code (7 Apps Django)
+      </div>
+      <div class="card-body">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+          <div>
+            <span class="badge-pill">accounts</span>
+            <p style="font-size: 0.85rem; margin: 0;">Utilisateurs, authentification, rôles</p>
+          </div>
+          <div>
+            <span class="badge-pill">courriers</span>
+            <p style="font-size: 0.85rem; margin: 0;">Cœur métier - gestion courriers</p>
+          </div>
+          <div>
+            <span class="badge-pill">organisations</span>
+            <p style="font-size: 0.85rem; margin: 0;">Services administratifs</p>
+          </div>
+          <div>
+            <span class="badge-pill">parametrage</span>
+            <p style="font-size: 0.85rem; margin: 0;">Configuration (types, statuts, priorités)</p>
+          </div>
+          <div>
+            <span class="badge-pill">mouvements</span>
+            <p style="font-size: 0.85rem; margin: 0;">Journal d'audit immuable</p>
+          </div>
+          <div>
+            <span class="badge-pill">notifications</span>
+            <p style="font-size: 0.85rem; margin: 0;">Système d'alertes</p>
+          </div>
+          <div>
+            <span class="badge-pill">dashboard</span>
+            <p style="font-size: 0.85rem; margin: 0;">Tableaux de bord par rôle</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Pied de page -->
+  <div style="text-align: center; color: white; margin-top: 2rem; padding: 2rem; opacity: 0.8;">
+    <p>🇳🇪 Gestion Électronique des Courriers | MINTRANSPORT Niger | 2026</p>
+  </div>
+</div>
+
+<script src="{% static 'js/auth_bg.js' %}"></script>
+{% endblock %}

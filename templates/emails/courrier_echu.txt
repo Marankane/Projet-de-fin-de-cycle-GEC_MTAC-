@@ -1,0 +1,57 @@
+GESTION ÉLECTRONIQUE DES COURRIERS - MINTRANSPORT
+==================================================
+
+Bonjour {{ utilisateur.prenom }} {{ utilisateur.nom }},
+
+⚠️ ALERTE IMPORTANTE : UN COURRIER A DÉPASSÉ SA DATE LIMITE
+
+─────────────────────────────────────────────────────
+
+🚨 INFORMATION CRITIQUE
+
+Délai dépassé : {{ jours_retard }} jour(s)
+
+Un courrier en votre charge a dépassé sa date limite de traitement.
+Action immédiate requise !
+
+─────────────────────────────────────────────────────
+
+📋 DÉTAILS DU COURRIER
+
+Numéro        : {{ courrier.numero }}
+Objet         : {{ courrier.objet }}
+Expéditeur    : {{ courrier.expediteur.nom }}
+Type          : {{ courrier.type_courrier.libelle }}
+Priorité      : {{ courrier.priorite.libelle }}
+Délai         : {{ courrier.date_echeance|date:"d/m/Y" }} ❌
+Statut Actuel : {{ courrier.statut.libelle }}
+
+─────────────────────────────────────────────────────
+
+✅ ACTION REQUISE
+
+Veuillez traiter ce courrier SANS DÉLAI.
+
+1. Accédez au système GED Courriers
+2. Consultez le courrier en détail
+3. Prenez les mesures nécessaires
+4. Mettez à jour le statut du courrier
+
+─────────────────────────────────────────────────────
+
+🔗 LIEN D'ACCÈS
+
+Cliquez sur le lien ci-dessous pour consulter le courrier :
+{{ request.build_absolute_uri }}/courriers/{{ courrier.id }}/
+
+Ou copiez-collez dans votre navigateur :
+http://127.0.0.1:8000/courriers/{{ courrier.id }}/
+
+─────────────────────────────────────────────────────
+
+ℹ️ INFORMATIONS
+
+Ne répondez pas à cet email. Il a été envoyé automatiquement par le système.
+
+© 2026 MINTRANSPORT - Ministère des Transports et de l'Aviation Civile 🇳🇪
+Tous droits réservés.

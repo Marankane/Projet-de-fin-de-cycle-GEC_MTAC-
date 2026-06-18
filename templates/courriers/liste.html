@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Courriers – GED{% endblock %}
+{% block breadcrumb %}<li class="breadcrumb-item active">Courriers</li>{% endblock %}
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <div><h1 class="h4 fw-bold text-primary-ged mb-1"><i class="bi bi-envelope-paper-fill me-2"></i>Courriers</h1><p class="text-muted small mb-0">{{ total }} courrier{{ total|pluralize }} dans votre périmètre</p></div>
+  {% if user.est_agent or user.est_admin %}<a href="{% url 'courriers:enregistrement' %}" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Enregistrer</a>{% endif %}
+</div>
+<div class="card-ged mb-4">
+  <div class="card-header d-flex align-items-center justify-content-between">
+    <span class="fw-semibold small text-primary-ged"><i class="bi bi-funnel me-1"></i>Filtres</span>
+    <button class="btn btn-sm btn-link text-muted p-0" type="button" data-bs-toggle="collapse" data-bs-target="#filtres"><i class="bi bi-chevron-down"></i></button>
+  </div>
+  <div class="collapse show" id="filtres">
+    <div class="card-body">
+      <form method="get" class="row g-2">
+        <div class="col-md-4"><label class="form-label small fw-semibold">Recherche libre</label>{{ form_recherche.q }}</div>
+        <div class="col-md-2"><label class="form-label small fw-semibold">Sens</label>{{ form_recherche.sens }}</div>
+        <div class="col-md-2"><label class="form-label small fw-semibold">Statut</label>{{ form_recherche.statut }}</div>
+        <div class="col-md-2"><label class="form-label small fw-semibold">Priorité</label>{{ form_recherche.priorite }}</div>
+        <div class="col-md-2"><label class="form-label small fw-semibold">Type</label>{{ form_recherche.type_courrier }}</div>
+        {% if user.peut_voir_tout %}<div class="col-md-3"><label class="form-label small fw-semibold">Service</label>{{ form_recherche.service }}</div>{% endif %}
+        <div class="col-md-2"><label class="form-label small fw-semibold">Du</label>{{ form_recherche.date_debut }}</div>
+        <div class="col-md-2"><label class="form-label small fw-semibold">Au</label>{{ form_recherche.date_fin }}</div>
+        <div class="col-md-2 d-flex align-items-end pb-1">
+          <div class="form-check">{{ form_recherche.en_retard }}<label class="form-check-label small fw-semibold text-danger" for="{{ form_recherche.en_retard.id_for_label }}">En retard</label></div>
+        </div>
+        <div class="col-md-2 d-flex align-items-end gap-2">
+          <button type="submit" class="btn btn-primary btn-sm flex-fill"><i class="bi bi-search me-1"></i>Filtrer</button>
+          <a href="{% url 'courriers:liste' %}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-x-lg"></i></a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<div class="card-ged">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead><tr><th class="ps-4"><input type="checkbox" id="select-all"><label for="select-all" class="visually-hidden">Sélectionner tout</label></th><th>Numéro</th><th>Objet</th><th>Sens</th><th>Expéditeur</th><th>Service</th><th>Statut</th><th>Priorité</th><th>Échéance</th><th class="text-center pe-4">PJ</th></tr></thead>
+        <tbody>
+          {% for c in courriers %}
+          <tr data-href="{% url 'courriers:detail' c.pk %}" class="cursor-pointer {% if c.est_en_retard %}table-danger{% endif %}">
+            <td class="ps-4"><input type="checkbox" class="courrier-checkbox" value="{{ c.pk }}" id="cb-{{ c.pk }}" {% if not user.peut_dispatcher or c.statut.est_final %}disabled{% endif %}><label for="cb-{{ c.pk }}" class="visually-hidden">Sélectionner {{ c.numero }}</label></td>
+            <td class="fw-bold text-primary-ged">{{ c.numero }}{% if c.confidentiel %}<i class="bi bi-shield-lock-fill text-danger ms-1 small" data-bs-toggle="tooltip" title="Confidentiel"></i>{% endif %}</td>
+            <td><span class="d-inline-block text-truncate" style="max-width:220px;" title="{{ c.objet }}">{{ c.objet }}</span></td>
+            <td><span class="badge rounded-pill {% if c.sens == 'ENT' %}bg-primary{% elif c.sens == 'SOR' %}bg-success{% else %}bg-warning text-dark{% endif %} bg-opacity-10 text-{% if c.sens == 'ENT' %}primary{% elif c.sens == 'SOR' %}success{% else %}warning{% endif %} border border-{% if c.sens == 'ENT' %}primary{% elif c.sens == 'SOR' %}success{% else %}warning{% endif %} border-opacity-25" style="font-size:.7rem;">{{ c.get_sens_display }}</span></td>
+            <td class="text-muted small">{{ c.expediteur.nom|truncatechars:22 }}</td>
+            <td class="text-muted small">{{ c.service_destinataire.code }}</td>
+            <td><span class="badge bg-{{ c.statut.couleur }}" style="font-size:.7rem;">{{ c.statut.libelle }}</span></td>
+            <td><span class="badge bg-{{ c.priorite.couleur }}" style="font-size:.7rem;">{{ c.priorite.libelle }}</span></td>
+            <td>{% if c.date_echeance %}<span class="small {% if c.est_en_retard %}text-danger fw-bold retard-badge{% else %}text-muted{% endif %}">{% if c.est_en_retard %}<i class="bi bi-exclamation-triangle-fill me-1"></i>{% endif %}{{ c.date_echeance|date:"d/m/Y" }}</span>{% else %}<span class="text-muted small">—</span>{% endif %}</td>
+            <td class="text-center pe-4">{% if c.nb_pieces_jointes %}<span class="badge bg-secondary rounded-pill" style="font-size:.68rem;"><i class="bi bi-paperclip"></i> {{ c.nb_pieces_jointes }}</span>{% else %}<span class="text-muted small">—</span>{% endif %}</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="10" class="text-center text-muted py-5"><i class="bi bi-inbox display-6 d-block mb-2 opacity-25"></i>Aucun courrier trouvé.{% if user.est_agent %}<a href="{% url 'courriers:enregistrement' %}" class="d-block mt-2 small">Enregistrer le premier →</a>{% endif %}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% if user.peut_dispatcher %}
+  <div class="card-body border-top py-3 bg-light">
+    <div class="row align-items-center">
+      <div class="col-md-8">
+        <small class="text-muted">Sélectionnez les courriers à dispatcher en bloc vers un service.</small>
+      </div>
+      <div class="col-md-4 text-end">
+        <button type="button" id="bulk-dispatch-btn" class="btn btn-outline-primary btn-sm" disabled>
+          <i class="bi bi-send me-1"></i>Dispatcher sélection (<span id="selected-count">0</span>)
+        </button>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+  {% if is_paginated %}
+  <div class="card-body border-top py-3">
+    <nav><ul class="pagination pagination-sm justify-content-center mb-0">
+      {% if page_obj.has_previous %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for k,v in request.GET.items %}{% if k != 'page' %}&{{ k }}={{ v }}{% endif %}{% endfor %}"><i class="bi bi-chevron-left"></i></a></li>{% endif %}
+      <li class="page-item active"><span class="page-link">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span></li>
+      {% if page_obj.has_next %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% for k,v in request.GET.items %}{% if k != 'page' %}&{{ k }}={{ v }}{% endif %}{% endfor %}"><i class="bi bi-chevron-right"></i></a></li>{% endif %}
+    </ul></nav>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

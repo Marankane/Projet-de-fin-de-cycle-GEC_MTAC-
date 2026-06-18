@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% block title %}Registre d'enregistrement – GED{% endblock %}
+{% block breadcrumb %}<li class="breadcrumb-item"><a href="{% url 'courriers:liste' %}" class="text-decoration-none">Courriers</a></li><li class="breadcrumb-item active">Registre d'enregistrement</li>{% endblock %}
+{% block content %}
+<div class="row">
+  <div class="col-12">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+      <div><h1 class="h4 fw-bold text-primary-ged mb-1"><i class="bi bi-book me-2"></i>Registre d'enregistrement</h1><p class="text-muted small mb-0">Tableau général des courriers enregistrés (Total : {{ total }})</p></div>
+    </div>
+
+    <!-- Filtres -->
+    <div class="card-ged mb-4">
+      <div class="card-header"><span class="form-section-title">Filtres</span></div>
+      <div class="card-body">
+        <form method="get" class="row g-3 align-items-end">
+          <div class="col-md-3">
+            <label class="form-label small fw-semibold">Année</label>
+            <select name="year" class="form-select">
+              <option value="">Toutes les années</option>
+              {% for year in years %}
+              <option value="{{ year }}" {% if year|stringformat:"s" == selected_year %}selected{% endif %}>{{ year }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label small fw-semibold">Mois</label>
+            <select name="month" class="form-select">
+              <option value="">Tous les mois</option>
+              {% for num, name in months %}
+              <option value="{{ num }}" {% if selected_month|stringformat:"s" == num|stringformat:"s" %}selected{% endif %}>{{ name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-3">
+            <button type="submit" class="btn btn-primary btn-sm w-100"><i class="bi bi-funnel me-1"></i>Filtrer</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Tableau du registre -->
+    <div class="card-ged">
+      <div class="table-responsive">
+        <table class="table table-ged table-sm mb-0">
+          <thead>
+            <tr>
+              <th style="width: 10%;">N° d'ordre</th>
+              <th style="width: 10%;">Nbr pièces joint</th>
+              <th style="width: 12%;">Date du porte</th>
+              <th style="width: 18%;">Destinataire</th>
+              <th style="width: 30%;">Objet</th>
+              <th style="width: 20%;">Observation</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for courrier in courriers %}
+            <tr>
+              <td><a href="{% url 'courriers:detail' courrier.id %}" class="text-decoration-none text-reset">{{ courrier.id }}</a></td>
+              <td>{{ courrier.pieces_jointes.count }}</td>
+              <td>{{ courrier.date_reception|date:"d/m/Y" }}</td>
+              <td>{{ courrier.service_destinataire.nom }}</td>
+              <td>{{ courrier.objet|truncatewords:15 }}</td>
+              <td>{{ courrier.observations|truncatewords:12 }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="6" class="text-center py-4 text-muted small">Aucun courrier enregistré pour cette période.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      {% if is_paginated %}
+      <div class="card-body border-top">
+        <nav aria-label="Page navigation">
+          <ul class="pagination pagination-sm mb-0">
+            {% if page_obj.has_previous %}
+            <li class="page-item"><a class="page-link" href="?page=1{% if request.GET.year %}&year={{ request.GET.year }}{% endif %}{% if request.GET.month %}&month={{ request.GET.month }}{% endif %}">Début</a></li>
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.year %}&year={{ request.GET.year }}{% endif %}{% if request.GET.month %}&month={{ request.GET.month }}{% endif %}">Précédent</a></li>
+            {% endif %}
+
+            <li class="page-item disabled"><span class="page-link">Page {{ page_obj.number }} sur {{ page_obj.paginator.num_pages }}</span></li>
+
+            {% if page_obj.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.year %}&year={{ request.GET.year }}{% endif %}{% if request.GET.month %}&month={{ request.GET.month }}{% endif %}">Suivant</a></li>
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.year %}&year={{ request.GET.year }}{% endif %}{% if request.GET.month %}&month={{ request.GET.month }}{% endif %}">Fin</a></li>
+            {% endif %}
+          </ul>
+        </nav>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Actions d'export -->
+    <div class="mt-4 text-center">
+      <button type="button" class="btn btn-outline-secondary btn-sm" onclick="window.print()">
+        <i class="bi bi-printer me-1"></i>Imprimer
+      </button>
+      <a href="#" class="btn btn-outline-primary btn-sm" onclick="exportToExcel(); return false;">
+        <i class="bi bi-file-earmark-spreadsheet me-1"></i>Exporter Excel
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function exportToExcel() {
+  const table = document.querySelector('.table-ged');
+  const rows = table.querySelectorAll('tr');
+  let csv = '\ufeff'; // BOM pour Excel
+  
+  rows.forEach(row => {
+    const cells = row.querySelectorAll('th, td');
+    const rowData = Array.from(cells).map(cell => {
+      let text = cell.textContent.trim();
+      text = text.replace(/"/g, '""'); // Échapper les guillemets
+      return `"${text}"`;
+    }).join(',');
+    csv += rowData + '\n';
+  });
+  
+  const link = document.createElement('a');
+  link.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  link.download = `registre_courriers_${new Date().toISOString().split('T')[0]}.csv`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+</script>
+{% endblock %}

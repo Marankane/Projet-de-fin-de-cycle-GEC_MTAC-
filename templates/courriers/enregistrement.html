@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Enregistrer un courrier – GED{% endblock %}
+{% block breadcrumb %}<li class="breadcrumb-item"><a href="{% url 'courriers:liste' %}" class="text-decoration-none">Courriers</a></li><li class="breadcrumb-item active">Enregistrement</li>{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-10">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+      <div>
+        <h1 class="h4 fw-bold  mb-1"><i class="bi bi-plus-square-fill me-2"></i>Enregistrer un courrier</h1>
+        <p class="text-muted small mb-0">Formulaire d'enregistrement simplifié</p>
+      </div>
+      <a href="{% url 'courriers:liste' %}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left me-1"></i>Retour</a>
+    </div>
+
+    <form method="post" enctype="multipart/form-data" novalidate>
+      {% csrf_token %}
+
+      {% if form.errors or form_pj.errors %}
+      <div class="alert alert-danger shadow-sm border-start border-4 border-danger">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        <strong>Erreur de validation :</strong> Veuillez vérifier les informations ci-dessous.
+        <ul class="mb-0 mt-2">
+          {% for error in form.non_field_errors %}<li>{{ error }}</li>{% endfor %}
+          {% for field in form %}
+            {% if field.errors and field.is_hidden %}
+              <li>Le champ <strong>{{ field.label }}</strong> a rencontré une erreur : {{ field.errors.0 }}</li>
+            {% endif %}
+          {% endfor %}
+          {% for field in form_pj %}
+            {% if field.errors %}<li>Pièce jointe ({{ field.label }}) : {{ field.errors.0 }}</li>{% endif %}
+          {% endfor %}
+          {% for error in form_pj.non_field_errors %}<li>Erreur pièce jointe : {{ error }}</li>{% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+
+      <div class="card-ged mb-4">
+        <div class="card-header"><span class="form-section-title"><i class="bi bi-document-earmark-text-fill me-1"></i>Identification du courrier</span></div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Date d'enregistrement</label>
+              <input type="text" id="date_enregistrement" class="form-control" value="{% now 'd/m/Y' %}" readonly>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">N° d'ordre</label>
+              <input type="text" id="numero" class="form-control" value="Auto généré" readonly>
+            </div>
+            
+            <div class="col-md-6">
+              <label class="form-label form-label-req">N° lettre</label>
+              {{ form.numero_lettre }}{% if form.numero_lettre.errors %}<div class="text-danger small mt-1">{{ form.numero_lettre.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Destinataire (Externe)</label>
+              {{ form.destinataire }}
+              {% if form.destinataire.errors %}<div class="text-danger small mt-1">{{ form.destinataire.errors.0 }}</div>{% endif %}
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label form-label-req">Date d'arrivée</label>
+              {{ form.date_reception }}{% if form.date_reception.errors %}<div class="invalid-feedback d-block">{{ form.date_reception.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-md-8">
+              <label class="form-label form-label-req">Objet</label>
+              {{ form.objet }}{% if form.objet.errors %}<div class="text-danger small mt-1">{{ form.objet.errors.0 }}</div>{% endif %}
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label form-label-req">Expéditeur</label>
+              {{ form.expediteur }}{% if form.expediteur.errors %}<div class="text-danger small mt-1">{{ form.expediteur.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Service (Original)</label>
+              <div class="checkbox-group">
+                {{ form.services_original }}
+                {% if form.services_original.errors %}<div class="text-danger small mt-1">{{ form.services_original.errors.0 }}</div>{% endif %}
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Date de sortie</label>
+              {{ form.date_sortie }}
+              {% if form.date_sortie.errors %}<div class="invalid-feedback d-block">{{ form.date_sortie.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Service (Copie)</label>
+              <div class="checkbox-group">
+                {{ form.services_copie }}
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label form-label-req">Type</label>
+              {{ form.type_courrier }}
+              {% if form.type_courrier.errors %}<div class="invalid-feedback d-block">{{ form.type_courrier.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label form-label-req">Priorité</label>
+              {{ form.priorite }}
+              {% if form.priorite.errors %}<div class="invalid-feedback d-block">{{ form.priorite.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label form-label-req">Direction Responsable</label>
+              {{ form.service_destinataire }}
+              {% if form.service_destinataire.errors %}<div class="invalid-feedback d-block">{{ form.service_destinataire.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-12 mt-2">
+              <div class="form-check form-switch">
+                {{ form.confidentiel }}
+                <label class="form-check-label fw-semibold text-danger" for="{{ form.confidentiel.id_for_label }}">Courrier confidentiel</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-3 border-top pt-3">
+            <h6 class="form-section-title mb-3"><i class="bi bi-paperclip me-1"></i>Pièce jointe (optionnel)</h6>
+            <div class="row g-3">
+              <div class="col-md-8">
+                <label class="form-label">Fichier</label>
+                {{ form_pj.fichier }}
+                {% if form_pj.fichier.errors %}<div class="text-danger small">{{ form_pj.fichier.errors.0 }}</div>{% endif %}
+                <div class="form-text">PDF, Word, Excel, images – max 20 Mo.</div>
+              </div>
+              <div class="col-md-4 d-flex align-items-end">
+                <div class="form-check">
+                  {{ form_pj.est_scan }}
+                  <label class="form-check-label small" for="{{ form_pj.est_scan.id_for_label }}">Document scanné original</label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-ged mb-4">
+        <div class="card-header"><span class="form-section-title"><i class="bi bi-eye me-1"></i>Récapitulatif</span></div>
+        <div class="card-body" id="recap">
+          <!-- Auto-updated summary -->
+        </div>
+      </div>
+
+      <div class="card-ged mb-4">
+        <div class="card-header"><span class="form-section-title"><i class="bi bi-robot me-1"></i>Agent IA / Traitement automatique</span></div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-12">
+              <div id="scan-area" class="border rounded p-3 text-center py-3 bg-light" role="button" aria-label="Zone de dépôt du document">
+                <div class="mb-3">
+                  <i class="bi bi-upload fs-2 text-secondary"></i>
+                </div>
+                <div class="fw-semibold">Déposez une image ou cliquez pour sélectionner un document</div>
+                <div class="text-muted small">JPEG, PNG, GIF ou PDF (20 Mo max). L'IA tente d'extraire l'objet, l'expéditeur et la date.</div>
+              </div>
+              <input type="file" id="document-scanner-input" name="document" accept="image/*,application/pdf" aria-label="Document à analyser" class="form-control d-none" />
+            </div>
+            <div class="col-12">
+              <div id="scan-preview" class="rounded border p-3 text-center text-muted">Aucun document sélectionné.</div>
+              <div id="file-info" class="form-text mt-2"></div>
+            </div>
+            <div class="col-md-4">
+              <button type="button" id="analyze-btn" class="btn btn-outline-primary w-100 disabled" disabled>Analyser le document</button>
+            </div>
+            <div class="col-md-8 align-self-center">
+              <div id="loading-spinner" class="spinner-border text-primary d-none" role="status"><span class="visually-hidden">Chargement...</span></div>
+            </div>
+            <div class="col-12">
+              <div id="ai-results"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex gap-2 justify-content-end">
+        <a href="{% url 'courriers:liste' %}" class="btn btn-outline-secondary">Annuler</a>
+        <button type="submit" class="btn btn-success px-4 fw-semibold"><i class="bi bi-save me-2"></i>Enregistrer le courrier</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const recapDiv = document.getElementById('recap');
+
+  function updateRecap() {
+    const data = {
+      'Date d\'enregistrement': document.getElementById('date_enregistrement').value || '{% now "d/m/Y" %}',
+      'N° d\'ordre': document.getElementById('numero').value,
+      'N° lettre': document.getElementById('id_numero_lettre').value,
+      'Destinataire': document.getElementById('id_destinataire').value,
+      'Date d\'arrivée': document.getElementById('id_date_reception').value,
+      'Objet': document.getElementById('id_objet').value,
+      'Expéditeur': document.getElementById('id_expediteur').value,
+      'Type de courrier': document.getElementById('id_type_courrier').selectedOptions[0]?.text || '',
+      'Priorité': document.getElementById('id_priorite').selectedOptions[0]?.text || '',
+      'Service destinataire': document.getElementById('id_service_destinataire').selectedOptions[0]?.text || '',
+      'Confidentiel': document.getElementById('id_confidentiel').checked ? 'Oui' : 'Non'
+    };
+
+    let html = '<div class="row">';
+    let count = 0;
+    for (const [key, value] of Object.entries(data)) {
+      if (value && value !== 'Auto généré') {
+        if (count % 2 === 0) {
+          html += '<div class="col-md-6"><dl class="row">';
+        }
+        html += `<dt class="col-sm-5">${key}</dt><dd class="col-sm-7">${value}</dd>`;
+        count++;
+        if (count % 2 === 0) {
+          html += '</dl></div>';
+        }
+      }
+    }
+    if (count % 2 !== 0) {
+      html += '</dl></div>';
+    }
+    html += '</div>';
+
+    recapDiv.innerHTML = html;
+  }
+
+  // Add event listeners
+  document.querySelectorAll('input, select, textarea').forEach(el => {
+    el.addEventListener('input', updateRecap);
+    el.addEventListener('change', updateRecap);
+  });
+
+  // Initial update
+  updateRecap();
+});
+</script><script>window.GED_PRIORITES_DELAIS = {{ priorites_delais|safe }};</script><script src="{% static 'js/scanner.js' %}"></script>{% endblock %}

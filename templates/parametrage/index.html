@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Paramétrage – GED{% endblock %}
+{% block breadcrumb %}<li class="breadcrumb-item active">Paramétrage</li>{% endblock %}
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <h1 class="h4 fw-bold text-primary-ged mb-0"><i class="bi bi-sliders me-2"></i>Paramétrage du système</h1>
+</div>
+<div class="row g-4">
+  <!-- Types -->
+  <div class="col-lg-4">
+    <div class="card-ged">
+      <div class="card-header d-flex align-items-center justify-content-between">
+        <span class="fw-semibold small text-primary-ged"><i class="bi bi-tags me-1"></i>Types de courrier</span>
+        <a href="{% url 'parametrage:creer_type' %}" class="btn btn-outline-primary btn-sm"><i class="bi bi-plus me-1"></i>Ajouter</a>
+      </div>
+      <div class="card-body p-0">
+        <table class="table table-ged mb-0">
+          <thead><tr><th class="ps-4">Code</th><th>Libellé</th><th class="pe-4 text-center">Actif</th></tr></thead>
+          <tbody>
+            {% for t in types %}<tr><td class="ps-4 font-monospace fw-bold text-primary-ged small">{{ t.code }}</td><td style="font-size:.84rem;">{{ t.libelle }}</td><td class="pe-4 text-center">{% if t.actif %}<i class="bi bi-check-circle-fill text-success"></i>{% else %}<i class="bi bi-x-circle-fill text-danger"></i>{% endif %}</td></tr>
+            {% empty %}<tr><td colspan="3" class="text-center text-muted py-3 small">Aucun type configuré.</td></tr>{% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <!-- Statuts -->
+  <div class="col-lg-4">
+    <div class="card-ged">
+      <div class="card-header d-flex align-items-center justify-content-between">
+        <span class="fw-semibold small text-primary-ged"><i class="bi bi-circle-half me-1"></i>Statuts de courrier</span>
+        <a href="{% url 'parametrage:creer_statut' %}" class="btn btn-outline-primary btn-sm"><i class="bi bi-plus me-1"></i>Ajouter</a>
+      </div>
+      <div class="card-body p-0">
+        <table class="table table-ged mb-0">
+          <thead><tr><th class="ps-4">Code</th><th>Libellé</th><th class="pe-4 text-center">Final</th></tr></thead>
+          <tbody>
+            {% for s in statuts %}<tr><td class="ps-4"><span class="badge bg-{{ s.couleur }}" style="font-size:.72rem;">{{ s.code }}</span></td><td style="font-size:.84rem;">{{ s.libelle }}</td><td class="pe-4 text-center">{% if s.est_final %}<i class="bi bi-lock-fill text-warning"></i>{% else %}—{% endif %}</td></tr>
+            {% empty %}<tr><td colspan="3" class="text-center text-muted py-3 small">Aucun statut configuré.</td></tr>{% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <!-- Priorités -->
+  <div class="col-lg-4">
+    <div class="card-ged">
+      <div class="card-header d-flex align-items-center justify-content-between">
+        <span class="fw-semibold small text-primary-ged"><i class="bi bi-lightning-fill me-1"></i>Priorités</span>
+        <a href="{% url 'parametrage:creer_priorite' %}" class="btn btn-outline-primary btn-sm"><i class="bi bi-plus me-1"></i>Ajouter</a>
+      </div>
+      <div class="card-body p-0">
+        <table class="table table-ged mb-0">
+          <thead><tr><th class="ps-4">Code</th><th>Libellé</th><th class="pe-4 text-center">Délai (j)</th></tr></thead>
+          <tbody>
+            {% for p in priorites %}<tr><td class="ps-4"><span class="badge bg-{{ p.couleur }}" style="font-size:.72rem;">{{ p.code }}</span></td><td style="font-size:.84rem;">{{ p.libelle }}</td><td class="pe-4 text-center fw-bold" style="font-size:.84rem;">{{ p.delai_jours }}</td></tr>
+            {% empty %}<tr><td colspan="3" class="text-center text-muted py-3 small">Aucune priorité configurée.</td></tr>{% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

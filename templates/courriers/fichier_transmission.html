@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% block title %}Fichier de transmission - {{ courrier.numero }}{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'courriers:liste' %}" class="text-decoration-none">Courriers</a></li>
+<li class="breadcrumb-item"><a href="{% url 'courriers:detail' courrier.pk %}" class="text-decoration-none">{{ courrier.numero }}</a></li>
+<li class="breadcrumb-item active">Fichier de transmission</li>
+{% endblock %}
+{% block content %}
+<div class="d-flex align-items-start justify-content-between gap-3 mb-4">
+  <div>
+    <h1 class="h4 fw-bold mb-1"><i class="bi bi-file-earmark-text-fill me-2"></i>Fichier de transmission</h1>
+    <p class="text-muted mb-0">{{ courrier.numero }} - {{ courrier.objet }}</p>
+  </div>
+  <a href="{% url 'courriers:detail' courrier.pk %}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left me-1"></i>Retour</a>
+</div>
+
+{% if form.errors %}
+<div class="alert alert-danger">
+  <strong>Veuillez corriger les erreurs du fichier de transmission.</strong>
+  {{ form.non_field_errors }}
+</div>
+{% endif %}
+
+<form method="post" novalidate>
+  {% csrf_token %}
+  <div class="card-ged mb-4">
+    <div class="card-header text-center">
+      <div class="fw-bold">MINISTÈRE DES TRANSPORTS ET DE L'AVIATION CIVILE</div>
+      <div class="small text-muted">REPUBLIQUE DU NIGER - FRATERNITE - TRAVAIL - PROGRES</div>
+      <div class="mt-2 fw-bold text-primary-ged">BUREAU D'ORDRE</div>
+    </div>
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-4">
+          <label class="form-label fw-semibold">Courrier arrivé N°</label>
+          <input class="form-control" value="{{ courrier.numero }}" readonly>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label fw-semibold">Date d'enregistrement</label>
+          <input class="form-control" value="{{ courrier.date_enregistrement|date:'d/m/Y' }}" readonly>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label fw-semibold">Référence lettre</label>
+          <input class="form-control" value="{{ courrier.numero_lettre|default:'-' }}" readonly>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Émetteur</label>
+          <input class="form-control" value="{{ courrier.expediteur.nom }}" readonly>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Direction responsable</label>
+          <input class="form-control" value="{{ courrier.service_destinataire.nom }}" readonly>
+        </div>
+        <div class="col-12">
+          <label class="form-label fw-semibold">Objet</label>
+          <textarea class="form-control" rows="2" readonly>{{ courrier.objet }}</textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card-ged mb-4">
+    <div class="card-header"><span class="fw-semibold"><i class="bi bi-send-check me-1"></i>FICHE DE TRANSMISSION</span></div>
+    <div class="card-body">
+      <div class="row g-4">
+        <div class="col-lg-4">
+          <div class="border rounded p-3 h-100">
+            <h2 class="h6 fw-bold mb-3">Secrétariat Général Adjoint</h2>
+            <div class="mb-3"><label class="form-label">Arrivé le</label>{{ form.date_entree_sga }}</div>
+            <div class="mb-3"><label class="form-label">Sorti le</label>{{ form.date_sortie_sga }}</div>
+            <div class="mb-3"><label class="form-label">Avis</label>{{ form.avis_sga_positif }}</div>
+            <div><label class="form-label">Observations SGA</label>{{ form.avis_sga }}</div>
+          </div>
+        </div>
+        <div class="col-lg-4">
+          <div class="border rounded p-3 h-100">
+            <h2 class="h6 fw-bold mb-3">Secrétariat Général</h2>
+            <div class="mb-3"><label class="form-label">Arrivé le</label>{{ form.date_entree_sg }}</div>
+            <div class="mb-3"><label class="form-label">Sorti le</label>{{ form.date_sortie_sg }}</div>
+            <div class="mb-3"><label class="form-label">Avis</label>{{ form.avis_sg_positif }}</div>
+            <div><label class="form-label">Observations SG</label>{{ form.avis_sg }}</div>
+          </div>
+        </div>
+        <div class="col-lg-4">
+          <div class="border rounded p-3 h-100">
+            <h2 class="h6 fw-bold mb-3">Ministre</h2>
+            <div class="mb-3"><label class="form-label">Arrivé le</label>{{ form.date_entree_min }}</div>
+            <div class="mb-3"><label class="form-label">Sorti le</label>{{ form.date_sortie_min }}</div>
+            <div class="mb-3"><label class="form-label">Décision</label>{{ form.decision_min_positif }}</div>
+            <div><label class="form-label">Décision du Ministre</label>{{ form.decision_min }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-6">
+      <div class="card-ged h-100">
+        <div class="card-header"><span class="fw-semibold"><i class="bi bi-people me-1"></i>Destinataires / Directions</span></div>
+        <div class="card-body">
+          <div class="mb-3">
+            <label class="form-label">Original</label>
+            {{ form.services_original }}
+          </div>
+          <div>
+            <label class="form-label">Copie</label>
+            {{ form.services_copie }}
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="card-ged h-100">
+        <div class="card-header"><span class="fw-semibold"><i class="bi bi-list-check me-1"></i>Pour</span></div>
+        <div class="card-body">
+          <label class="form-label">Suite à donner</label>
+          {{ form.pour }}
+          <datalist id="pour-options">
+            <option value="Suite à donner"></option>
+            <option value="M'en parler"></option>
+            <option value="Y prendre part"></option>
+            <option value="Prendre RDV"></option>
+            <option value="Information"></option>
+            <option value="Dispositions à prendre"></option>
+            <option value="Attribution"></option>
+            <option value="Préparation projet de réponse"></option>
+            <option value="Large diffusion"></option>
+            <option value="Classement"></option>
+            <option value="Garder en instance"></option>
+            <option value="Etudes et Observations"></option>
+          </datalist>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="d-flex justify-content-end gap-2 mt-4">
+    <a href="{% url 'courriers:detail' courrier.pk %}" class="btn btn-outline-secondary">Annuler</a>
+    <button type="submit" class="btn btn-success"><i class="bi bi-save me-2"></i>Enregistrer le fichier</button>
+  </div>
+</form>
+{% endblock %}

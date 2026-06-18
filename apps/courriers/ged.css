@@ -1,0 +1,70 @@
+/* GED Courriers - Custom Modern Design */
+:root {
+    /* Les variables de couleurs globales sont définies dans static/css/ged.css */
+    --card-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+body {
+    /* Le fond du body est défini dans static/css/ged.css pour éviter les redondances */
+    font-family: 'Inter', -apple-system, sans-serif;
+    color: #2c3e50;
+}
+
+/* Layout & Cards */
+.card {
+    border: none;
+    border-radius: var(--radius);
+    box-shadow: var(--card-shadow);
+    margin-bottom: 1.5rem;
+}
+
+.card-header {
+    background: linear-gradient(90deg, var(--color-orange-light), #FFFFFF);
+    border-bottom: 2px solid #FFFFFF;
+    padding: 1.25rem;
+    font-weight: 700;
+    border-radius: var(--radius) var(--radius) 0 0 !important;
+}
+
+.card-body {
+    background: rgba(255, 255, 255, 0.6) !important;
+}
+
+/* Forms Design */
+.form-label {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #4a5568;
+    margin-bottom: 0.5rem;
+}
+
+.form-control, .form-select {
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 0.6rem 0.8rem;
+    transition: all 0.2s;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--color-orange-main);
+    box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.1); /* Ombre de focus: vert institutionnel avec opacité */
+}
+
+/* Multi-select (Select2/SelectMultiple) */
+.select2-multiple {
+    min-height: 100px;
+}
+
+/* Badge Status */
+.badge {
+    padding: 0.5em 0.8em;
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+/* Section Header */
+.section-title {
+    border-left: 4px solid var(--color-orange-main); /* Bordure du titre de section: orange principal */
+    padding-left: 15px;
+    margin-bottom: 25px;
+}

@@ -1,0 +1,213 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}GED Courriers – MINTRANSPORT{% endblock %}</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'css/modern.css' %}">
+<link rel="stylesheet" href="{% static 'css/ged.css' %}">
+<link rel="stylesheet" href="{% static 'css/notification-bell.css' %}">
+{% block extra_css %}{% endblock %}
+<style>
+  .external-service-opt {
+    background-color: #f0f7ff !important;
+    color: #0056b3 !important;
+    font-weight: 600 !important;
+  }
+</style>
+</head>
+<body>
+{% if user.is_authenticated %}
+<nav id="sidebar">
+  <div class="sidebar-header d-flex align-items-center gap-2">
+    <img src="{% static 'img/armoirie1.png' %}" alt="Logo" style="height: 60px; width: 60px; object-fit: contain;">
+    <div>
+      <div class="fw-bold tracking-tight">MINISTÈRE DES TRANSPORTS ET DE L'AVIATION CIVILE</div>
+      <small class="text-muted">GED-Courrier</small>
+    </div>
+  </div>
+
+  <div class="sb-user-card mx-3 mb-4">
+    <div class="d-flex align-items-center gap-3 p-3">
+        <div class="sb-avatar-wrapper">
+          {% if user.avatar %}
+            <img src="{{ user.avatar.url }}" alt="Avatar" class="rounded-circle shadow-sm" style="width: 40px; height: 40px; object-fit: cover;">
+          {% else %}
+            <div class="avatar-placeholder rounded-circle shadow-sm" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #FFD89B, #B8E6C8); font-weight: 700; color: #2C3E50;">{{ user.initiales }}</div>
+          {% endif %}
+        </div>
+        <div class="overflow-hidden">
+          <h6 class="mb-0 text-truncate fw-bold">{{ user.nom_complet }}</h6>
+          <small class="text-muted text-uppercase font-size-sm">{{ user.get_role_display }}</small>
+        </div>
+    </div>
+  </div>
+
+  <div class="sb-nav">
+    <a href="{% url 'dashboard:accueil' %}" class="sb-link {% if request.resolver_match.app_name == 'dashboard' %}active{% endif %}" title="Accueil">
+      <i class="bi bi-speedometer2"></i> <span>Tableau de bord</span>
+    </a>
+    {# Les agents et les administrateurs peuvent créer et voir les courriers #}
+    {% if user.est_agent or user.est_admin %}
+    <a href="{% url 'courriers:enregistrement' %}" class="sb-link" title="Nouvel enregistrement"><i class="bi bi-plus-circle-dotted"></i> <span>Nouvel enregistrement</span></a>
+    <a href="{% url 'courriers:liste' %}" class="sb-link {% if request.resolver_match.app_name == 'courriers' %}active{% endif %}" title="Tous les courriers">
+      <i class="bi bi-envelope-paper"></i> <span>Tous les courriers</span>
+    </a>
+    {% endif %}
+
+    {% if user.est_agent or user.est_admin %}
+    <div class="sb-divider">Suivi Opérationnel</div>
+    <a href="{% url 'courriers:liste' %}?en_retard=on" class="sb-link link-warning" title="Courriers en retard"><i class="bi bi-clock-history"></i> <span>Courriers en retard</span></a>
+    <a href="{% url 'courriers:liste' %}?statut=ENR" class="sb-link" title="À dispatcher"><i class="bi bi-inbox"></i> <span>À dispatcher</span></a>
+    {% endif %}
+    {% if user.est_admin %} {# Liens d'administration #}
+    <div class="sb-divider">Système</div>
+    <a href="{% url 'accounts:liste_utilisateurs' %}" class="sb-link" title="Utilisateurs"><i class="bi bi-people"></i> <span>Utilisateurs</span></a>
+    <a href="{% url 'parametrage:index' %}" class="sb-link" title="Configuration"><i class="bi bi-gear"></i> <span>Configuration</span></a>
+    {% endif %}
+    <div class="sb-divider mt-auto">Compte</div>
+    <form method="post" action="{% url 'accounts:deconnexion' %}" class="px-3 pb-3">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-outline-danger btn-sm w-100 d-flex align-items-center justify-content-center gap-2">
+        <i class="bi bi-box-arrow-left"></i> Déconnexion
+      </button>
+    </form>
+  </div>
+</nav>
+<div id="main-content">
+  <header id="topbar">
+    <div class="d-flex align-items-center gap-3">
+      <button class="btn btn-sm btn-outline-secondary d-lg-none" id="sidebarToggle" title="Menu"><i class="bi bi-list"></i></button>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0 small">
+          <li class="breadcrumb-item"><a href="{% url 'dashboard:accueil' %}" class="text-decoration-none">Accueil</a></li>
+          {% block breadcrumb %}{% endblock %}
+        </ol>
+      </nav>
+    </div>
+    <div class="d-flex align-items-center gap-3">
+      {% if user.service %}<span class="badge bg-light text-secondary border small">{{ user.service.code }}</span>{% endif %}
+      {% include 'includes/notification_bell.html' %}
+      <span class="text-muted small">{% now "d/m/Y" %}</span>
+    </div>
+  </header>
+  <main class="page-content">
+    {% if messages %}
+    <div class="mb-3">
+      {% for m in messages %}
+      <div class="alert alert-{% if m.tags == 'error' or m.tags == 'danger' %}danger{% elif m.tags %}{{ m.tags }}{% else %}info{% endif %} alert-dismissible fade show d-flex align-items-center gap-2" role="alert">
+        <i class="bi {% if m.tags == 'error' or m.tags == 'danger' %}bi-exclamation-triangle-fill{% elif m.tags == 'success' %}bi-check-circle-fill{% elif m.tags == 'warning' %}bi-exclamation-circle-fill{% else %}bi-info-circle-fill{% endif %}"></i>
+        <div>{{ m }}</div>
+        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" title="Fermer"></button>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+    {% block content %}{% endblock %}
+  </main>
+</div>
+{% else %}
+{% block content_public %}{% endblock %}
+{% endif %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+<script src="{% static 'js/ged.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Gestion du menu latéral (Sidebar) sur mobile
+  const sidebarToggle = document.getElementById('sidebarToggle');
+  const sidebar = document.getElementById('sidebar');
+  if (sidebarToggle && sidebar) {
+    sidebarToggle.addEventListener('click', function() {
+      sidebar.classList.toggle('active');
+    });
+  }
+
+  // Organisation et mise en évidence des services externes (ANAC, ASECNA, etc.)
+  const extCodes = ['ANAC', 'ASECNA', 'AANN', 'ANISER', 'CNUT', 'CNTPS', 'CFTTR', 'SOTRUNI', 'NSH', 'NWA'];
+  document.querySelectorAll('select').forEach(sel => {
+    const opts = Array.from(sel.options);
+    const targets = opts.filter(o => extCodes.some(c => o.text.toUpperCase().includes(c)));
+    
+    if (targets.length > 0) {
+      const fragment = document.createDocumentFragment();
+      const emptyOpt = (opts[0] && (opts[0].value === "" || opts[0].text.includes('---'))) ? opts[0] : null;
+      
+      if (emptyOpt) fragment.appendChild(emptyOpt);
+      
+      const sep1 = document.createElement('option');
+      sep1.text = "── SERVICES EXTERNES ──";
+      sep1.disabled = true;
+      sep1.style.color = "#495057";
+      sep1.style.background = "#e9ecef";
+      sep1.style.fontWeight = "bold";
+      fragment.appendChild(sep1);
+
+      targets.forEach(o => {
+        o.classList.add('external-service-opt');
+        fragment.appendChild(o);
+      });
+
+      const sep2 = document.createElement('option');
+      sep2.text = "── AUTRES SERVICES ──";
+      sep2.disabled = true;
+      sep2.style.background = "#f8f9fa";
+      fragment.appendChild(sep2);
+
+      opts.forEach(o => { if (!targets.includes(o) && o !== emptyOpt) fragment.appendChild(o); });
+      sel.innerHTML = '';
+      sel.appendChild(fragment);
+    }
+  });
+
+  // Restriction pour les Hautes Autorités (Ministre, SG, GSA)
+  // Ces rôles ne peuvent renvoyer un courrier qu'à l'agent courrier
+  const roleDisplay = "{{ user.get_role_display|upper }}";
+  const rolesRestreints = ['MINISTRE', 'SG', 'SECRÉTAIRE GÉNÉRAL', 'GSA', 'CABINET'];
+  const estHauteAutorite = rolesRestreints.some(r => roleDisplay.includes(r));
+
+  if (estHauteAutorite) {
+    document.querySelectorAll('select[name*="destinataire"], select[name*="service"], select[name*="attribue_a"]').forEach(sel => {
+      Array.from(sel.options).forEach(opt => {
+        if (opt.value === "" || opt.text.includes('──')) return; // Garder les séparateurs et vides
+        
+        const estCibleValide = opt.text.toUpperCase().includes('AGENT COURRIER') || opt.text.toUpperCase().includes('SERVICE COURRIER') || opt.text.toUpperCase().includes('BUREAU D\'ORDRE');
+        
+        if (!estCibleValide) {
+          opt.disabled = true;
+          opt.style.display = 'none'; // Masquer pour l'utilisateur
+        }
+      });
+    });
+  }
+
+  // Restriction pour l'Agent Courrier
+  const estAgent = roleDisplay === 'AGENT' || roleDisplay === 'AGENT COURRIER';
+  if (estAgent) {
+    document.querySelectorAll('select[name*="service"], select[name*="service_destinataire"]').forEach(sel => {
+      Array.from(sel.options).forEach(opt => {
+        if (opt.value === "" || opt.text.includes('──')) return;
+        
+        const codesAutorises = ['SGA', 'SG', 'MIN', 'CABINET', 'MINISTRE'];
+        const estCibleValide = codesAutorises.some(c => opt.text.toUpperCase().includes(c));
+        
+        if (!estCibleValide) {
+          opt.disabled = true;
+          opt.style.display = 'none';
+        }
+      });
+    });
+  }
+
+  const notificationCount = document.getElementById('notification-count');
+  const notificationList = document.getElementById('notification-list');
+  // Ancien code de notifications - remplacé par notification-bell.js
+});
+</script>
+<script src="{% static 'js/notification-bell.js' %}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

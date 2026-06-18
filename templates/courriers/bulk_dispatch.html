@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Dispatch en bloc – GED{% endblock %}
+{% block breadcrumb %}<li class="breadcrumb-item"><a href="{% url 'courriers:liste' %}" class="text-decoration-none">Courriers</a></li><li class="breadcrumb-item active">Dispatch en bloc</li>{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+      <h1 class="h4 fw-bold text-primary-ged mb-0"><i class="bi bi-send-fill me-2"></i>Dispatch en bloc</h1>
+      <a href="{% url 'courriers:liste' %}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left me-1"></i>Retour</a>
+    </div>
+    <div class="alert alert-info d-flex gap-3 align-items-start mb-4">
+      <i class="bi bi-info-circle-fill fs-5 flex-shrink-0"></i>
+      <div><strong class="d-block">{{ courriers|length }} courrier(s) sélectionné(s)</strong><span class="small">Ces courriers seront dispatchés vers le même service.</span></div>
+    </div>
+    <div class="card-ged mb-4">
+      <div class="card-header"><span class="fw-semibold">Courriers à dispatcher</span></div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-sm mb-0">
+            <thead class="table-light"><tr><th>Numéro</th><th>Objet</th><th>Statut</th><th>Priorité</th></tr></thead>
+            <tbody>
+              {% for c in courriers %}
+              <tr>
+                <td><strong>{{ c.numero }}</strong></td>
+                <td>{{ c.objet|truncatechars:50 }}</td>
+                <td><span class="badge bg-{{ c.statut.couleur }}">{{ c.statut.libelle }}</span></td>
+                <td><span class="badge bg-{{ c.priorite.couleur }}">{{ c.priorite.libelle }}</span></td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="card-ged">
+      <div class="card-body">
+        <form method="post" novalidate>
+          {% csrf_token %}
+          {% for c in courriers %}<input type="hidden" name="courrier_ids" value="{{ c.pk }}">{% endfor %}
+          {% for field in form %}
+          <div class="mb-3">
+            <label class="form-label small fw-semibold {% if field.field.required %}form-label-req{% endif %}">{{ field.label }}</label>
+            {{ field }}
+            {% if field.name == 'pour' %}
+            <datalist id="pour-options">
+              <option value="Suite à donner"></option>
+              <option value="M'en parler"></option>
+              <option value="Y prendre part"></option>
+              <option value="Prendre RDV"></option>
+              <option value="Information"></option>
+              <option value="Élaborer TDR"></option>
+              <option value="Élaborer Plan d’Action"></option>
+              <option value="Préparer Projet de Budget"></option>
+              <option value="Dispositions à prendre"></option>
+              <option value="Attribution"></option>
+              <option value="Préparation projet de réponse"></option>
+              <option value="Large diffusion"></option>
+              <option value="Classement"></option>
+              <option value="Garder en Instance"></option>
+              <option value="Préparer réunion de partage"></option>
+              <option value="Études et Observations"></option>
+            </datalist>
+            {% endif %}
+            {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+            {% if field.errors %}<div class="text-danger small mt-1">{{ field.errors.0 }}</div>{% endif %}
+          </div>
+          {% endfor %}
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary"><i class="bi bi-send me-1"></i>Dispatcher {{ courriers|length }} courrier(s)</button>
+            <a href="{% url 'courriers:liste' %}" class="btn btn-outline-secondary">Annuler</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

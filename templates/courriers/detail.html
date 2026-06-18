@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+{% block title %}{{ courrier.numero }} – GED{% endblock %}
+{% block breadcrumb %}<li class="breadcrumb-item"><a href="{% url 'courriers:liste' %}" class="text-decoration-none">Courriers</a></li><li class="breadcrumb-item active">{{ courrier.numero }}</li>{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4">
+  <div>
+    <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
+      <h1 class="h5 fw-bold mb-0 text-primary-ged">{{ courrier.numero }}</h1>
+      <span class="badge bg-{{ courrier.statut.couleur }}">{{ courrier.statut.libelle }}</span>
+      <span class="badge bg-{{ courrier.priorite.couleur }}">{{ courrier.priorite.libelle }}</span>
+      {% if courrier.confidentiel %}<span class="badge bg-dark"><i class="bi bi-shield-lock-fill me-1"></i>Confidentiel</span>{% endif %}
+      {% if courrier.est_en_retard %}<span class="badge bg-danger retard-badge"><i class="bi bi-exclamation-triangle-fill me-1"></i>En retard</span>{% endif %}
+    </div>
+    <p class="text-muted mb-0">{{ courrier.objet }}</p>
+  </div>
+  <div class="d-flex gap-2 flex-wrap">
+    {% if peut_fichier_transmission %}<a href="{% url 'courriers:fichier_transmission' courrier.pk %}" class="btn btn-warning btn-sm"><i class="bi bi-file-earmark-text me-1"></i>Fichier de transmission</a>{% endif %}
+    {% if peut_dispatcher and courrier.statut.code == 'ENR' %}<a href="{% url 'courriers:dispatch' courrier.pk %}" class="btn btn-primary btn-sm"><i class="bi bi-send me-1"></i>Dispatcher</a>{% endif %}
+    {% if est_chef and not courrier.statut.est_final %}<a href="{% url 'courriers:instruction' courrier.pk %}" class="btn btn-outline-primary btn-sm"><i class="bi bi-pencil-square me-1"></i>Instruire</a>{% endif %}
+    {% if peut_valider and courrier.statut.code == 'DIS' %}<form method="post" action="{% url 'courriers:valider' courrier.pk %}" class="d-inline">{% csrf_token %}<input type="hidden" name="commentaire" value="Validé par le chef de service."><button class="btn btn-success btn-sm" data-confirm="Valider ce courrier ?"><i class="bi bi-check2-circle me-1"></i>Valider</button></form>{% endif %}
+    {% if not courrier.statut.est_final and peut_valider %}<button class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#modalCloture"><i class="bi bi-lock me-1"></i>Clôturer</button>{% endif %}
+    {% if user.est_agent or user.est_admin %}<a href="{% url 'courriers:modifier' courrier.pk %}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-pencil me-1"></i>Modifier</a>{% endif %}
+    <a href="{% url 'courriers:liste' %}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left me-1"></i>Retour</a>
+  </div>
+</div>
+<div class="row g-4">
+  <div class="col-lg-8">
+    <!-- Infos générales -->
+    <div class="card-ged mb-4">
+      <div class="card-header"><span class="fw-semibold small text-primary-ged"><i class="bi bi-info-circle me-1"></i>Informations générales</span></div>
+      <div class="card-body">
+        <div class="row g-4 text-center">
+          <div class="col-6 col-md-3 border-end"><p class="text-muted x-small fw-bold mb-1 uppercase">SENS</p><span class="badge rounded-pill {% if courrier.sens == 'ENT' %}bg-primary{% elif courrier.sens == 'SOR' %}bg-success{% else %}bg-warning text-dark{% endif %}">{{ courrier.get_sens_display }}</span></div>
+          <div class="col-6 col-md-3 border-end"><p class="text-muted x-small fw-bold mb-1 uppercase">TYPE</p><p class="mb-0 fw-semibold">{{ courrier.type_courrier.libelle }}</p></div>
+          <div class="col-6 col-md-3 border-end"><p class="text-muted x-small fw-bold mb-1 uppercase">RÉCEPTION</p><p class="mb-0 fw-semibold">{{ courrier.date_reception|date:"d/m/Y" }}</p></div>
+          <div class="col-6 col-md-3"><p class="text-muted x-small fw-bold mb-1 uppercase">ÉCHÉANCE</p>
+            {% if courrier.date_echeance %}
+            <p class="mb-0 small {% if courrier.est_en_retard %}text-danger fw-bold{% endif %}">
+              {% if courrier.est_en_retard %}<i class="bi bi-exclamation-triangle-fill me-1"></i>{% endif %}{{ courrier.date_echeance|date:"d/m/Y" }}
+              {% if courrier.jours_restants is not None %}<span class="badge {% if courrier.est_en_retard %}bg-danger{% elif courrier.jours_restants <= 2 %}bg-warning text-dark{% else %}bg-success{% endif %} ms-1" style="font-size:.62rem;">{% if courrier.est_en_retard %}Retard{% else %}J-{{ courrier.jours_restants }}{% endif %}</span>{% endif %}
+            </p>
+            {% else %}<p class="mb-0 text-muted small">—</p>{% endif %}
+          </div>
+          {% if courrier.reference_externe %}<div class="col-sm-6"><p class="text-muted small fw-semibold mb-1">RÉF. EXTERNE</p><p class="mb-0 small font-monospace">{{ courrier.reference_externe }}</p></div>{% endif %}
+          {% if courrier.pour %}<div class="col-12"><p class="text-muted small fw-semibold mb-1">POUR / SUITE À DONNER</p><p class="mb-0 small">{{ courrier.pour }}</p></div>{% endif %}
+          {% if courrier.observations %}<div class="col-12"><p class="text-muted small fw-semibold mb-1">OBSERVATIONS</p><p class="mb-0 small">{{ courrier.observations }}</p></div>{% endif %}
+        </div>
+      </div>
+    </div>
+    <!-- Expéditeur / Service -->
+    <div class="row g-3 mb-4">
+      <div class="col-md-6">
+        <div class="card-ged h-100">
+          <div class="card-header"><span class="fw-semibold small text-primary-ged"><i class="bi bi-person-fill me-1"></i>Expéditeur</span></div>
+          <div class="card-body">
+            <p class="fw-semibold mb-1">{{ courrier.expediteur.nom }}</p>
+            <p class="text-muted small mb-1"><span class="badge bg-secondary bg-opacity-10 text-secondary">{{ courrier.expediteur.get_type_display }}</span></p>
+            {% if courrier.expediteur.telephone %}<p class="text-muted small mb-1"><i class="bi bi-telephone me-1"></i>{{ courrier.expediteur.telephone }}</p>{% endif %}
+            {% if courrier.expediteur.email %}<p class="text-muted small mb-0"><i class="bi bi-envelope me-1"></i>{{ courrier.expediteur.email }}</p>{% endif %}
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card-ged h-100">
+          <div class="card-header"><span class="fw-semibold small text-primary-ged"><i class="bi bi-building me-1"></i>Service destinataire</span></div>
+          <div class="card-body">
+            <p class="fw-semibold mb-1">{{ courrier.service_destinataire.nom }}</p>
+            <p class="text-muted small mb-2">Code : <strong>{{ courrier.service_destinataire.code }}</strong></p>
+            {% if courrier.agent_responsable %}
+            <div class="d-flex align-items-center gap-2 mt-3 pt-3 border-top">
+              <div class="avatar-initiales">{{ courrier.agent_responsable.initiales }}</div>
+              <div><p class="mb-0 small fw-semibold">{{ courrier.agent_responsable.nom_complet }}</p><p class="mb-0 text-muted" style="font-size:.72rem;">Agent responsable</p></div>
+            </div>
+            {% else %}<p class="text-muted small fst-italic mt-2 mb-0">Aucun agent affecté</p>{% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- PJ -->
+    <div class="card-ged mb-4">
+      <div class="card-header d-flex align-items-center justify-content-between">
+        <span class="fw-semibold small text-primary-ged"><i class="bi bi-paperclip me-1"></i>Pièces jointes <span class="badge bg-secondary ms-1">{{ courrier.pieces_jointes.count }}</span></span>
+        {% if not courrier.statut.est_final %}<button class="btn btn-outline-primary btn-sm" data-bs-toggle="collapse" data-bs-target="#form-pj"><i class="bi bi-plus me-1"></i>Ajouter</button>{% endif %}
+      </div>
+      <div class="collapse" id="form-pj">
+        <div class="card-body border-bottom">
+          <form method="post" action="{% url 'courriers:ajouter_pj' courrier.pk %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="row g-2 align-items-end">
+              <div class="col-md-7">{{ form_pj.fichier }}</div>
+              <div class="col-md-3"><div class="form-check mt-2">{{ form_pj.est_scan }}<label class="form-check-label small" for="{{ form_pj.est_scan.id_for_label }}">Document scanné</label></div></div>
+              <div class="col-md-2"><button type="submit" class="btn btn-primary btn-sm w-100"><i class="bi bi-upload me-1"></i>Upload</button></div>
+            </div>
+          </form>
+        </div>
+      </div>
+      <div class="card-body p-0">
+        {% if courrier.pieces_jointes.all %}
+        <div class="list-group list-group-flush">
+          {% for pj in courrier.pieces_jointes.all %}
+          <div class="list-group-item d-flex align-items-center gap-3 px-4 py-3">
+            <i class="{{ pj.icone }} text-primary-ged" style="font-size:1.3rem;width:22px;"></i>
+            <div class="flex-fill">
+              <p class="mb-0 small fw-semibold">{{ pj.nom_fichier }}</p>
+              <p class="mb-0 text-muted" style="font-size:.72rem;">{{ pj.taille_ko }} Ko{% if pj.est_scan %} <span class="badge bg-info bg-opacity-10 text-info ms-1">Scan</span>{% endif %} · {{ pj.uploade_par.nom_complet }} · {{ pj.uploade_le|date:"d/m/Y H:i" }}</p>
+            </div>
+            <a href="{{ pj.fichier.url }}" target="_blank" class="btn btn-outline-secondary btn-sm"><i class="bi bi-download"></i></a>
+            {% if user.est_admin or user == pj.uploade_par %}<form method="post" action="{% url 'courriers:supprimer_pj' courrier.pk pj.pk %}" class="d-inline">{% csrf_token %}<button class="btn btn-outline-danger btn-sm" data-confirm="Supprimer cette pièce jointe ?"><i class="bi bi-trash"></i></button></form>{% endif %}
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}<div class="text-center text-muted py-4 small"><i class="bi bi-paperclip fs-4 d-block mb-1 opacity-25"></i>Aucune pièce jointe</div>{% endif %}
+      </div>
+    </div>
+    <!-- Liens -->
+    {% if liens_source or liens_cible %}
+    <div class="card-ged mb-4">
+      <div class="card-header d-flex align-items-center justify-content-between">
+        <span class="fw-semibold small text-primary-ged"><i class="bi bi-link-45deg me-1"></i>Courriers liés</span>
+        <button class="btn btn-outline-primary btn-sm" data-bs-toggle="collapse" data-bs-target="#form-lien"><i class="bi bi-plus me-1"></i>Lier</button>
+      </div>
+      <div class="collapse" id="form-lien">
+        <div class="card-body border-bottom">
+          <form method="post" action="{% url 'courriers:ajouter_lien' courrier.pk %}" class="row g-2">
+            {% csrf_token %}
+            <div class="col-md-4">{{ form_lien.type_lien }}</div>
+            <div class="col-md-6">{{ form_lien.courrier_cible }}</div>
+            <div class="col-md-2"><button type="submit" class="btn btn-primary btn-sm w-100">Lier</button></div>
+          </form>
+        </div>
+      </div>
+      <div class="card-body">
+        {% for l in liens_source %}<div class="d-flex align-items-center gap-2 mb-2"><span class="badge bg-primary bg-opacity-10 text-primary">{{ l.get_type_lien_display }}</span><a href="{% url 'courriers:detail' l.courrier_cible.pk %}" class="small fw-semibold text-decoration-none text-primary-ged">{{ l.courrier_cible.numero }}</a><span class="text-muted small">– {{ l.courrier_cible.objet|truncatechars:55 }}</span></div>{% endfor %}
+        {% for l in liens_cible %}<div class="d-flex align-items-center gap-2 mb-2"><span class="badge bg-secondary bg-opacity-10 text-secondary">← {{ l.get_type_lien_display }}</span><a href="{% url 'courriers:detail' l.courrier_source.pk %}" class="small fw-semibold text-decoration-none text-primary-ged">{{ l.courrier_source.numero }}</a><span class="text-muted small">– {{ l.courrier_source.objet|truncatechars:55 }}</span></div>{% endfor %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+  <!-- Timeline -->
+  <div class="col-lg-4">
+    <div class="card-ged mb-4">
+      <div class="card-body">
+        <dl class="row small mb-0">
+          <dt class="col-5 text-muted fw-semibold">Créé par</dt><dd class="col-7 mb-1">{{ courrier.cree_par.nom_complet }}</dd>
+          <dt class="col-5 text-muted fw-semibold">Dernière MAJ</dt><dd class="col-7 mb-1">{{ courrier.modifie_le|date:"d/m/Y H:i" }}</dd>
+          {% if courrier.date_cloture %}<dt class="col-5 text-muted fw-semibold">Clôturé le</dt><dd class="col-7 mb-0 text-success fw-semibold">{{ courrier.date_cloture|date:"d/m/Y" }}</dd>{% endif %}
+        </dl>
+      </div>
+    </div>
+    <div class="card-ged">
+      <div class="card-header"><span class="fw-semibold small text-primary-ged"><i class="bi bi-clock-history me-1"></i>Historique <span class="badge bg-secondary ms-1">{{ mouvements.count }}</span></span></div>
+      <div class="card-body" style="max-height:500px;overflow-y:auto;">
+        <div class="timeline">
+          {% for m in mouvements %}
+          <div class="timeline-item">
+            <div class="timeline-dot {% if m.action == 'CREATION' %}bg-success text-white{% elif m.action == 'INSTRUCTION' %}bg-warning{% elif m.action == 'DISPATCH' %}bg-info text-white{% elif m.action == 'VALIDATION' %}bg-success text-white{% elif m.action == 'CLOTURE' %}bg-dark text-white{% elif m.action == 'PJ_AJOUT' %}bg-primary text-white{% else %}bg-light text-muted{% endif %}">
+              <i class="bi {% if m.action == 'CREATION' %}bi-plus-circle-fill{% elif m.action == 'INSTRUCTION' %}bi-pencil-fill{% elif m.action == 'DISPATCH' %}bi-send-fill{% elif m.action == 'AFFECTATION' %}bi-person-check-fill{% elif m.action == 'VALIDATION' %}bi-check2-all{% elif m.action == 'PJ_AJOUT' %}bi-paperclip{% else %}bi-circle-fill{% endif %}" style="font-size:.75rem;"></i>
+            </div>
+            <div class="timeline-body">
+              <p class="timeline-action">{{ m.get_action_display }}</p>
+              <p class="timeline-meta">{{ m.utilisateur.nom_complet }}{% if m.service %} · {{ m.service.code }}{% endif %}</p>
+              {% if m.commentaire %}<div class="timeline-comment">{{ m.commentaire|truncatechars:150 }}</div>{% endif %}
+              <p class="timeline-meta mt-1">{{ m.date_mouvement|date:"d/m/Y à H:i" }}</p>
+            </div>
+          </div>
+          {% empty %}<p class="text-muted text-center small py-3">Aucun historique.</p>{% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Modal Clôture -->
+<div class="modal fade" id="modalCloture" tabindex="-1">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title fw-bold text-danger"><i class="bi bi-lock me-2"></i>Clôturer</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <form method="post" action="{% url 'courriers:cloturer' courrier.pk %}">
+        {% csrf_token %}
+        <div class="modal-body"><p class="small text-muted">Cette action est définitive.</p><textarea name="commentaire" class="form-control" rows="3" placeholder="Motif de clôture…"></textarea></div>
+        <div class="modal-footer"><button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Annuler</button><button type="submit" class="btn btn-danger btn-sm"><i class="bi bi-lock me-1"></i>Confirmer</button></div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

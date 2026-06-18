@@ -1,0 +1,10 @@
+[
+  {"model":"organisations.service","pk":1,"fields":{"nom":"Direction Générale","code":"DG","description":"Direction Générale du Transport et de la Navigation Civile","actif":true}},
+  {"model":"organisations.service","pk":2,"fields":{"nom":"Secrétariat Général","code":"SG","description":"Coordination administrative","actif":true}},
+  {"model":"organisations.service","pk":3,"fields":{"nom":"Direction des Opérations Aériennes","code":"DOA","description":"Gestion de l'aviation civile","actif":true}},
+  {"model":"organisations.service","pk":4,"fields":{"nom":"Direction du Transport Terrestre","code":"DTT","description":"Réglementation transport routier","actif":true}},
+  {"model":"organisations.service","pk":5,"fields":{"nom":"Direction Administrative et Financière","code":"DAF","description":"Gestion administrative et financière","actif":true}},
+  {"model":"organisations.service","pk":6,"fields":{"nom":"Direction des Systèmes d'Information","code":"DSI","description":"Infrastructure informatique","actif":true}},
+  {"model":"organisations.service","pk":7,"fields":{"nom":"Direction des Affaires Juridiques","code":"DAJ","description":"Affaires juridiques et contentieux","actif":true}},
+  {"model":"organisations.service","pk":8,"fields":{"nom":"Cabinet du Ministre","code":"CAB","description":"Cabinet et protocole ministériel","actif":true}}
+]

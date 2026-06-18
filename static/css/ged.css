@@ -1,0 +1,328 @@
+/* GED Courriers - Custom Modern Design */
+:root {
+    /* Les variables de couleurs globales sont définies dans static/css/ged.css */
+    --color-orange-main: #FF9933; /* Orange drapeau */
+    --color-green-main: #008C45; /* Vert drapeau */
+    --color-orange-light: #FFF4E6; /* Orange très clair pour les fonds */
+    --color-green-light: #E6F4EA; /* Vert très clair pour les fonds */
+    --gradient-niger: linear-gradient(135deg, var(--color-orange-light) 0%, #FFFFFF 50%, var(--color-green-light) 100%);
+    --gradient-btn: linear-gradient(90deg, #FF9933 0%, #008C45 100%);
+
+    --text-main: #1e293b;
+    --text-muted: #64748b;
+    --bg-light: #ffffff;
+    --border-color: #e2e8f0;
+    --radius: 16px;
+    --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+
+    /* Sidebar specific colors, derived from main palette */
+    --sidebar-bg: var(--color-orange-light); /* Orange très clair pour la sidebar */
+    --sidebar-hover: #fcebd5; /* Orange légèrement plus foncé pour le survol */
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background: var(--gradient-niger);
+    background-attachment: fixed;
+    color: var(--text-main);
+    position: relative; /* Nécessaire pour le positionnement du filigrane */
+}
+
+/* Sidebar moderne */
+#sidebar {
+    width: 280px;
+    height: 100vh;
+    position: fixed;
+    background: var(--sidebar-bg);
+    border-right: 1px solid rgba(255, 153, 51, 0.2);
+    display: flex;
+    flex-direction: column;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s ease;
+    box-shadow: 4px 0 15px rgba(0,0,0,0.02);
+    z-index: 1000;
+}
+
+.sidebar-header {
+    padding: 2rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    border-bottom: 2px solid #FFFFFF;
+}
+
+/* Style pour le logo dans l'en-tête de la sidebar */
+.sidebar-header img {
+    max-height: 60px; /* Ajustez selon vos besoins */
+    width: auto;
+}
+
+.sb-user-card {
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(10px);
+    margin: 1rem;
+    box-shadow: var(--shadow);
+    border-radius: var(--radius);
+    border: 1px solid #FFFFFF;
+}
+
+.sb-avatar-wrapper img, .avatar-placeholder {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    background: var(--color-orange-main);
+    color: white;
+    object-fit: cover;
+}
+
+.sb-nav {
+    flex: 1;
+    padding: 0 1rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.sb-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0.8rem 1rem;
+    color: var(--text-muted);
+    text-decoration: none;
+    border-radius: var(--radius);
+    margin-bottom: 4px;
+    transition: all 0.2s;
+}
+
+.sb-link i { font-size: 1.2rem; }
+
+.sb-link:hover {
+    background-color: #FFFFFF;
+    color: var(--color-orange-main);
+    transform: translateX(5px);
+}
+
+.sb-link.active {
+    background-color: var(--color-green-main);
+    color: #FFFFFF;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(0, 140, 69, 0.2);
+}
+
+.sb-divider {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    padding: 1.5rem 1rem 0.5rem;
+    font-weight: 700;
+}
+
+/* Content Area */
+#main-content {
+    margin-left: 280px;
+    min-height: 100vh;
+    transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* --- États de la Barre Latérale --- */
+
+/* Mode Réduit (Icônes uniquement) */
+#sidebar.collapsed {
+    width: 80px;
+}
+
+#sidebar.collapsed .sidebar-header h4,
+#sidebar.collapsed .sb-user-card,
+#sidebar.collapsed .sb-link span,
+#sidebar.collapsed .sb-divider {
+    display: none;
+}
+
+#sidebar.collapsed .sb-link {
+    justify-content: center;
+    padding: 1rem 0;
+}
+
+#main-content.sidebar-collapsed {
+    margin-left: 80px;
+}
+
+/* Mode Totalement Masqué */
+#sidebar.hidden {
+    transform: translateX(-100%);
+}
+
+#main-content.sidebar-hidden {
+    margin-left: 0;
+}
+
+#topbar {
+    height: 70px;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border-color);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 999;
+}
+
+.card-header {
+    background: linear-gradient(90deg, var(--color-orange-light), #FFFFFF);
+    color: var(--color-orange-main);
+    border-bottom: 1px solid var(--border-color);
+    font-weight: 700;
+    padding: 1.25rem;
+}
+
+.card {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    transition: all 0.3s ease;
+}
+
+.card-body {
+    background: rgba(255, 255, 255, 0.6) !important;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+/* --- Styles spécifiques pour la page de Connexion --- */
+
+.auth-wrapper {
+    display: flex;
+    align-items: flex-start; /* Aligné en haut pour permettre le contrôle par margin-top */
+    justify-content: center; /* Centrage horizontal */
+    min-height: 100vh;
+    padding: 20px;
+    background: var(--gradient-niger); /* Fond de la section avec le dégradé du Niger */
+    background-attachment: fixed;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    transition: background-image 1.5s ease-in-out;
+}
+
+.auth-card,
+.niger-card-theme {
+    background: var(--gradient-niger) !important; /* Application du dégradé au formulaire */
+    border: 3px solid #FFFFFF; /* Bordure blanche plus marquée pour faire ressortir le dégradé */
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    width: 100%;
+    max-width: 450px;
+    padding: 2.5rem;
+    margin-top: 5rem; /* Ajustez cette valeur (ex: 5rem ou 100px) pour la marge souhaitée */
+    backdrop-filter: blur(5px);
+}
+
+.auth-card::before {
+    content: "";
+    display: block;
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 1.5rem;
+    background: url('/static/img/logo_mtac.png') no-repeat center;
+    background-size: contain;
+}
+
+.auth-card .form-control:hover {
+    border-color: var(--color-green-main);
+}
+
+.auth-card .btn {
+    width: 100%;
+    background: var(--gradient-btn) !important;
+    color: white !important; /* Ajouté pour s'assurer que le texte du bouton est blanc */
+    border: none !important;
+    padding: 0.8rem;
+    font-weight: 600;
+    margin-top: 1rem;
+    transition: all 0.3s ease;
+}
+
+.auth-card .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 140, 69, 0.3);
+    opacity: 0.95;
+}
+
+/* Correction pour le champ de mot de passe et le bouton "afficher" */
+/* Assure que le champ de mot de passe dans un input-group a les bons coins */
+.auth-card .input-group > .form-control:not(:last-child) {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+/* Style pour le bouton/icône de bascule du mot de passe */
+.auth-card .input-group .btn,
+.auth-card .input-group .input-group-text {
+    width: auto !important; /* Annule le width: 100% */
+    margin-top: 0 !important; /* Annule la marge supérieure */
+    padding: 10px 14px; /* Aligne le padding avec le form-control */
+    font-size: 0.95rem; /* Aligne la taille de police avec le form-control */
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    display: flex; /* Pour centrer l'icône verticalement */
+    align-items: center;
+    justify-content: center;
+}
+
+/* --- Styles pour le Scanner et le Bouton d'Analyse --- */
+
+.scanner-zone {
+    border: 2px dashed #CBD5E1;
+    background: rgba(230, 126, 34, 0.05);
+    border-radius: var(--radius);
+    padding: 2rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    margin-bottom: 1.5rem;
+    display: block;
+    width: 100%;
+}
+
+.scanner-zone:hover {
+    background: var(--color-green-light);
+    border-color: var(--color-green-main);
+}
+
+.btn-analyse-document {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: var(--gradient-btn) !important;
+    color: white !important;
+    border: none !important;
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(230, 126, 34, 0.2);
+    font-family: inherit;
+    font-size: 0.95rem;
+}
+
+.btn-analyse-document:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(39, 174, 96, 0.3);
+    opacity: 0.95;
+}

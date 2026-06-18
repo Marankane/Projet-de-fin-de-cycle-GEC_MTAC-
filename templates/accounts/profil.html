@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Mon profil – GED{% endblock %}
+{% block breadcrumb %}<li class="breadcrumb-item active">Mon profil</li>{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <h1 class="h4 fw-bold text-primary-ged mb-4"><i class="bi bi-person-circle me-2"></i>Mon profil</h1>
+    <div class="row g-4">
+      <div class="col-md-6">
+        <div class="card-ged">
+          <div class="card-header"><span class="fw-semibold small text-primary-ged"><i class="bi bi-pencil me-1"></i>Informations personnelles</span></div>
+          <div class="card-body">
+            <div class="d-flex align-items-center gap-3 mb-4">
+              {% if user.avatar %}<img src="{{ user.avatar.url }}" id="avatar-preview" class="rounded-circle" width="60" height="60" style="object-fit:cover;">
+              {% else %}<div class="rounded-circle d-flex align-items-center justify-content-center" style="width:60px;height:60px;background:#e8f0fb;color:#1a4a7a;font-size:1.2rem;font-weight:700;">{{ user.initiales }}</div>{% endif %}
+              <div>
+                <p class="fw-bold mb-0">{{ user.nom_complet }}</p>
+                <p class="text-muted small mb-0">{{ user.get_role_display }}{% if user.service %} · {{ user.service.nom }}{% endif %}</p>
+              </div>
+            </div>
+            <form method="post" enctype="multipart/form-data" novalidate>
+              {% csrf_token %}<input type="hidden" name="action" value="profil">
+              <div class="mb-3"><label class="form-label small fw-semibold">Nom</label>{{ form.nom }}</div>
+              <div class="mb-3"><label class="form-label small fw-semibold">Prénom</label>{{ form.prenom }}</div>
+              <div class="mb-3"><label class="form-label small fw-semibold">Téléphone</label>{{ form.telephone }}</div>
+              <div class="mb-3"><label class="form-label small fw-semibold">Photo de profil</label>{{ form.avatar }}</div>
+              <div class="mb-3 form-check">{{ form.notifier_par_email }}<label class="form-check-label small" for="{{ form.notifier_par_email.id_for_label }}">Recevoir les notifications par e-mail</label></div>
+              <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-save me-1"></i>Enregistrer</button>
+            </form>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card-ged">
+          <div class="card-header"><span class="fw-semibold small text-primary-ged"><i class="bi bi-key me-1"></i>Changer le mot de passe</span></div>
+          <div class="card-body">
+            <form method="post" novalidate>
+              {% csrf_token %}<input type="hidden" name="action" value="mdp">
+              <div class="mb-3"><label class="form-label small fw-semibold">Mot de passe actuel</label>{{ form_mdp.ancien }}{% if form_mdp.ancien.errors %}<div class="text-danger small mt-1">{{ form_mdp.ancien.errors.0 }}</div>{% endif %}</div>
+              <div class="mb-3"><label class="form-label small fw-semibold">Nouveau mot de passe</label>{{ form_mdp.mdp1 }} {% if form_mdp.mdp1.errors %}<div class="text-danger small mt-1">{{ form_mdp.mdp1.errors.0 }}</div>{% endif %}</div>
+              <div class="mb-4"><label class="form-label small fw-semibold">Confirmation</label>{{ form_mdp.mdp2 }}{% if form_mdp.non_field_errors %}<div class="text-danger small mt-1">{{ form_mdp.non_field_errors.0 }}</div>{% endif %}</div>
+              <button type="submit" class="btn btn-outline-primary btn-sm"><i class="bi bi-shield-lock me-1"></i>Modifier le mot de passe</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+{% block title %}Tableau de bord – GED{% endblock %}
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <div>
+    <h1 class="h4 fw-bold text-primary-ged mb-1">Bonjour, {{ user.prenom }}</h1>
+    <p class="text-muted small mb-0">{{ today|date:"l d F Y" }} · {{ user.get_role_display }}{% if user.service %} · {{ user.service.nom }}{% endif %}</p>
+  </div>
+  {% if 'agent' == 'agent' %}<a href="{% url 'courriers:enregistrement' %}" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Enregistrer</a>{% endif %}
+</div>
+
+{% if 'agent' == 'agent' %}
+<div class="row g-3 mb-4">
+  {% include "dashboard/includes/kpi.html" with valeur=total label="Mes courriers" icon="bi-envelope" bg="#e8f0fb" color="#1a4a7a" %}
+  {% include "dashboard/includes/kpi.html" with valeur=en_cours label="En cours" icon="bi-hourglass-split" bg="#e7f0ff" color="#0d6efd" %}
+  {% include "dashboard/includes/kpi.html" with valeur=en_retard label="En retard" icon="bi-alarm-fill" bg="#fdf0f1" color="#dc3545" %}
+  {% include "dashboard/includes/kpi.html" with valeur=clotures_semaine label="Clôturés (7j)" icon="bi-check2-circle" bg="#eaf6ef" color="#198754" %}
+</div>
+<div class="row g-4">
+  <div class="col-lg-7">
+    <div class="card-ged mb-4">
+      <div class="card-header d-flex justify-content-between"><span class="fw-semibold small text-primary-ged"><i class="bi bi-list-task me-1"></i>Mes courriers en cours</span><a href="{% url 'courriers:liste' %}" class="small text-muted text-decoration-none">Voir tout →</a></div>
+      <div class="card-body p-0">
+        <table class="table table-ged mb-0">
+          <thead><tr><th class="ps-4">Numéro</th><th>Objet</th><th>Statut</th><th class="pe-4">Échéance</th></tr></thead>
+          <tbody>
+            {% for c in courriers_en_cours %}<tr data-href="{% url 'courriers:detail' c.pk %}"><td class="ps-4 fw-semibold text-primary-ged" style="font-size:.84rem;">{{ c.numero }}</td><td style="font-size:.84rem;">{{ c.objet|truncatechars:50 }}</td><td><span class="badge bg-{{ c.statut.couleur }}" style="font-size:.68rem;">{{ c.statut.libelle }}</span></td><td class="pe-4 small {% if c.est_en_retard %}text-danger fw-bold{% else %}text-muted{% endif %}">{{ c.date_echeance|date:"d/m/Y"|default:"—" }}</td></tr>
+            {% empty %}<tr><td colspan="4" class="text-center text-muted py-4 small">Aucun courrier en cours.</td></tr>{% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <div class="card-ged">
+      <div class="card-header"><span class="fw-semibold small text-primary-ged"><i class="bi bi-activity me-1"></i>Activité récente</span></div>
+      <div class="list-group list-group-flush">
+        {% for m in activite %}<a href="{% url 'courriers:detail' m.courrier.pk %}" class="list-group-item list-group-item-action border-0 py-3 px-4"><div class="d-flex align-items-center gap-3"><div class="rounded-circle flex-shrink-0" style="width:7px;height:7px;background:#1a4a7a;"></div><div><p class="mb-0 small fw-semibold">{{ m.get_action_display }}</p><p class="mb-0 text-muted" style="font-size:.72rem;">{{ m.courrier.numero }} · {{ m.date_mouvement|date:"d/m H:i" }}</p></div></div></a>
+        {% empty %}<div class="list-group-item border-0 py-4 text-center text-muted small">Aucune activité récente.</div>{% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+{% elif 'agent' == 'chef_service' %}
+<div class="row g-3 mb-4">
+  {% include "dashboard/includes/kpi.html" with valeur=total label="Total service" icon="bi-envelope-fill" bg="#e8f0fb" color="#1a4a7a" %}
+  {% include "dashboard/includes/kpi.html" with valeur=a_instruire label="À instruire" icon="bi-pencil-square" bg="#fef9ec" color="#e8a020" %}
+  {% include "dashboard/includes/kpi.html" with valeur=a_valider label="À valider" icon="bi-check2-square" bg="#f2eefb" color="#7f77dd" %}
+  {% include "dashboard/includes/kpi.html" with valeur=en_retard label="En retard" icon="bi-alarm-fill" bg="#fdf0f1" color="#dc3545" %}
+</div>
+<div class="row g-4">
+  <div class="col-lg-4">
+    <div class="card-ged mb-4">
+      <div class="card-header"><span class="fw-semibold small text-primary-ged"><i class="bi bi-bar-chart-steps me-1"></i>Pipeline</span></div>
+      <div class="card-body">
+        {% for s in par_statut %}
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <span class="badge bg-{{ s.statut__couleur }}" style="min-width:65px;font-size:.7rem;">{{ s.statut__code }}</span>
+          <span class="text-muted small flex-fill mx-2">{{ s.statut__libelle }}</span>
+          <strong class="text-primary-ged">{{ s.total }}</strong>
+        </div>
+        {% if total %}<div class="progress mb-3" style="height:4px;margin-top:-8px;">{% widthratio s.total total 100 as pct %}<div class="progress-bar bg-{{ s.statut__couleur }}" style="width:{{ pct }}%"></div></div>{% endif %}
+        {% endfor %}
+      </div>
+    </div>
+    <div class="card-ged">
+      <div class="card-header"><span class="fw-semibold small text-primary-ged"><i class="bi bi-people me-1"></i>Agents</span></div>
+      <div class="list-group list-group-flush">
+        {% for a in agents %}<div class="list-group-item border-0 py-3 px-4 d-flex align-items-center gap-3"><div class="avatar-initiales">{{ a.initiales }}</div><div class="flex-fill"><p class="mb-0 small fw-semibold">{{ a.nom_complet }}</p><p class="mb-0 text-muted" style="font-size:.72rem;">{{ a.nb }} en cours</p></div><span class="badge {% if a.nb > 5 %}bg-warning text-dark{% elif a.nb > 2 %}bg-primary bg-opacity-10 text-primary{% else %}bg-success bg-opacity-10 text-success{% endif %} rounded-pill">{{ a.nb }}</span></div>
+        {% empty %}<div class="list-group-item border-0 py-3 text-center text-muted small">Aucun agent.</div>{% endfor %}
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-8">
+    <div class="card-ged">
+      <div class="card-header d-flex justify-content-between"><span class="fw-semibold small text-primary-ged"><i class="bi bi-pencil-square me-1"></i>À instruire</span><a href="{% url 'courriers:liste' %}" class="small text-muted text-decoration-none">Voir tout →</a></div>
+      <div class="card-body p-0">
+        <table class="table table-ged mb-0">
+          <thead><tr><th class="ps-4">Numéro</th><th>Objet</th><th>Priorité</th><th>Agent</th><th class="pe-4">Échéance</th></tr></thead>
+          <tbody>
+            {% for c in a_traiter %}<tr data-href="{% url 'courriers:detail' c.pk %}"><td class="ps-4 fw-semibold text-primary-ged" style="font-size:.84rem;">{{ c.numero }}</td><td style="font-size:.84rem;">{{ c.objet|truncatechars:45 }}</td><td><span class="badge bg-{{ c.priorite.couleur }}" style="font-size:.68rem;">{{ c.priorite.code }}</span></td><td class="text-muted small">{{ c.agent_responsable.nom_complet|default:"—" }}</td><td class="pe-4 small {% if c.est_en_retard %}text-danger fw-bold{% else %}text-muted{% endif %}">{{ c.date_echeance|date:"d/m/Y"|default:"—" }}</td></tr>
+            {% empty %}<tr><td colspan="5" class="text-center text-muted py-4 small"><i class="bi bi-check2-all text-success fs-4 d-block mb-1"></i>Aucun courrier en attente.</td></tr>{% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% elif 'agent' == 'directeur' or 'agent' == 'admin' %}
+<div class="row g-3 mb-4">
+  {% include "dashboard/includes/kpi.html" with valeur=total label="Total courriers" icon="bi-envelope-fill" bg="#e8f0fb" color="#1a4a7a" %}
+  {% include "dashboard/includes/kpi.html" with valeur=ouverts label="En cours" icon="bi-hourglass-split" bg="#e7f0ff" color="#0d6efd" %}
+  {% include "dashboard/includes/kpi.html" with valeur=en_retard label="En retard" icon="bi-exclamation-triangle-fill" bg="#fdf0f1" color="#dc3545" %}
+  {% include "dashboard/includes/kpi.html" with valeur=recus_mois label="Reçus ce mois" icon="bi-calendar-check" bg="#eaf6ef" color="#198754" %}
+  {% if 'agent' == 'admin' %}{% include "dashboard/includes/kpi.html" with valeur=nb_users label="Utilisateurs actifs" icon="bi-people-fill" bg="#f2eefb" color="#7f77dd" %}{% endif %}
+</div>
+<div class="row g-4">
+  <div class="col-lg-7">
+    <div class="card-ged mb-4">
+      <div class="card-header"><span class="fw-semibold small text-primary-ged"><i class="bi bi-diagram-3 me-1"></i>Courriers ouverts par service</span></div>
+      <div class="card-body p-0">
+        <table class="table table-ged mb-0">
+          <thead><tr><th class="ps-4">Service</th><th>En cours</th><th>En retard</th><th class="pe-4">Taux retard</th></tr></thead>
+          <tbody>
+            {% for s in par_service %}
+            <tr>
+              <td class="ps-4"><span class="fw-semibold">{{ s.service_destinataire__code }}</span> <span class="text-muted small">{{ s.service_destinataire__nom|truncatechars:30 }}</span></td>
+              <td><span class="badge bg-primary bg-opacity-10 text-primary rounded-pill">{{ s.total }}</span></td>
+              <td>{% if s.retard %}<span class="badge bg-danger bg-opacity-10 text-danger rounded-pill"><i class="bi bi-exclamation-triangle-fill me-1" style="font-size:.55rem;"></i>{{ s.retard }}</span>{% else %}<span class="text-muted small">—</span>{% endif %}</td>
+              <td class="pe-4">{% if s.total %}{% widthratio s.retard s.total 100 as taux %}<div class="progress" style="height:5px;width:80px;display:inline-block;vertical-align:middle;"><div class="progress-bar {% if taux > 30 %}bg-danger{% elif taux > 10 %}bg-warning{% else %}bg-success{% endif %}" style="width:{{ taux }}%"></div></div> <small class="text-muted">{{ taux }}%</small>{% endif %}</td>
+            </tr>
+            {% empty %}<tr><td colspan="4" class="text-center text-muted py-4 small">Aucune donnée.</td></tr>{% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card-ged">
+      <div class="card-header"><span class="fw-semibold small text-primary-ged"><i class="bi bi-activity me-1"></i>Activité récente</span></div>
+      <div class="list-group list-group-flush">
+        {% for m in activite %}<a href="{% url 'courriers:detail' m.courrier.pk %}" class="list-group-item list-group-item-action border-0 py-3 px-4"><div class="d-flex align-items-center gap-3"><div class="avatar-initiales">{{ m.utilisateur.initiales }}</div><div><p class="mb-0 small fw-semibold">{{ m.utilisateur.nom_complet }}</p><p class="mb-0 text-muted" style="font-size:.72rem;">{{ m.get_action_display }} · {{ m.courrier.numero }}{% if m.service %} · {{ m.service.code }}{% endif %}</p></div><small class="text-muted flex-shrink-0" style="font-size:.72rem;">{{ m.date_mouvement|date:"d/m H:i" }}</small></div></a>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <div class="card-ged mb-4">
+      <div class="card-header"><span class="fw-semibold small text-primary-ged"><i class="bi bi-arrows-expand me-1"></i>Répartition par sens</span></div>
+      <div class="card-body">
+        {% for s in par_sens %}
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <span class="badge rounded-pill {% if s.sens == 'ENT' %}bg-primary bg-opacity-10 text-primary{% elif s.sens == 'SOR' %}bg-success bg-opacity-10 text-success{% else %}bg-warning bg-opacity-10 text-dark{% endif %}" style="min-width:80px;font-size:.78rem;">{% if s.sens == 'ENT' %}Entrants{% elif s.sens == 'SOR' %}Sortants{% else %}Internes{% endif %}</span>
+          {% if total %}<div class="flex-fill mx-3">{% widthratio s.total total 100 as pct %}<div class="progress" style="height:7px;"><div class="progress-bar {% if s.sens == 'ENT' %}bg-primary{% elif s.sens == 'SOR' %}bg-success{% else %}bg-warning{% endif %}" style="width:{{ pct }}%"></div></div></div>{% endif %}
+          <strong class="text-primary-ged">{{ s.total }}</strong>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="card-ged">
+      <div class="card-header d-flex justify-content-between"><span class="fw-semibold small text-danger"><i class="bi bi-flag-fill me-1"></i>Courriers prioritaires</span><a href="{% url 'courriers:liste' %}?priorite=URG" class="small text-muted text-decoration-none">Voir tout →</a></div>
+      <div class="list-group list-group-flush">
+        {% for c in importants %}<a href="{% url 'courriers:detail' c.pk %}" class="list-group-item list-group-item-action border-0 py-3 px-4"><div class="d-flex align-items-start gap-2"><span class="badge bg-{{ c.priorite.couleur }} mt-1 flex-shrink-0" style="font-size:.62rem;">{{ c.priorite.code }}</span><div class="flex-fill"><p class="mb-0 small fw-semibold text-truncate" style="max-width:240px;">{{ c.objet }}</p><p class="mb-0 text-muted" style="font-size:.72rem;">{{ c.numero }} · {{ c.service_destinataire.code }}{% if c.est_en_retard %} <span class="text-danger"><i class="bi bi-exclamation-triangle-fill"></i> Retard</span>{% endif %}</p></div></div></a>
+        {% empty %}<div class="list-group-item border-0 py-4 text-center text-muted small"><i class="bi bi-check-circle text-success fs-4 d-block mb-1"></i>Aucun courrier urgent.</div>{% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+{% else %}
+<div class="alert alert-info"><i class="bi bi-info-circle me-2"></i>Tableau de bord en cours de configuration.</div>
+{% endif %}
+
+{% endblock %}

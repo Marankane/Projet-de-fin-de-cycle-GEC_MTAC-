@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nouveau courrier - GED Courriers</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; background-color: #f5f5f5; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 0 auto; background-color: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .header { background: linear-gradient(135deg, #E85D04 0%, #1B4332 100%); color: white; padding: 30px; text-align: center; }
+        .header h1 { margin: 0; font-size: 24px; }
+        .header p { margin: 5px 0 0 0; font-size: 14px; opacity: 0.9; }
+        .content { padding: 30px; }
+        .welcome { font-size: 16px; margin-bottom: 20px; }
+        .courrier-info { background-color: #f9f9f9; border-left: 4px solid #E85D04; padding: 15px; margin: 20px 0; border-radius: 4px; }
+        .info-row { display: flex; justify-content: space-between; margin: 10px 0; font-size: 14px; }
+        .info-label { font-weight: 600; color: #1B4332; min-width: 120px; }
+        .info-value { color: #666; }
+        .priority-badge { display: inline-block; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; margin: 5px 0; }
+        .priority-urgent { background-color: #fee; color: #c53030; }
+        .priority-normal { background-color: #efe; color: #22543d; }
+        .priority-low { background-color: #eef; color: #2c5aa0; }
+        .action-button { display: inline-block; background: linear-gradient(135deg, #E85D04 0%, #1B4332 100%); color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; margin: 20px 0; font-weight: 600; }
+        .action-button:hover { opacity: 0.9; }
+        .footer { background-color: #f5f5f5; padding: 20px; text-align: center; font-size: 12px; color: #666; border-top: 1px solid #eee; }
+        .footer p { margin: 5px 0; }
+        .divider { height: 1px; background-color: #eee; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🔔 Nouveau Courrier</h1>
+            <p>Gestion Électronique des Courriers - MINTRANSPORT</p>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            <div class="welcome">
+                <p>Bonjour <strong>{{ utilisateur.prenom }} {{ utilisateur.nom }}</strong>,</p>
+                <p>Un nouveau courrier vous concerne et demande votre attention.</p>
+            </div>
+
+            <!-- Courrier Details -->
+            <div class="courrier-info">
+                <h3 style="margin-top: 0; color: #1B4332;">📋 Détails du Courrier</h3>
+                
+                <div class="info-row">
+                    <span class="info-label">Numéro :</span>
+                    <span class="info-value"><strong>{{ courrier.numero }}</strong></span>
+                </div>
+                
+                <div class="info-row">
+                    <span class="info-label">Objet :</span>
+                    <span class="info-value">{{ courrier.objet }}</span>
+                </div>
+                
+                <div class="info-row">
+                    <span class="info-label">Expéditeur :</span>
+                    <span class="info-value">{{ courrier.expediteur.nom }}</span>
+                </div>
+                
+                <div class="info-row">
+                    <span class="info-label">Date Réception :</span>
+                    <span class="info-value">{{ courrier.date_reception|date:"d/m/Y" }}</span>
+                </div>
+                
+                <div class="info-row">
+                    <span class="info-label">Type :</span>
+                    <span class="info-value">{{ courrier.type_courrier.libelle }}</span>
+                </div>
+                
+                <div class="info-row">
+                    <span class="info-label">Priorité :</span>
+                    <span class="info-value">
+                        <span class="priority-badge {% if courrier.priorite.code == 'TRES_URG' or courrier.priorite.code == 'URG' %}priority-urgent{% elif courrier.priorite.code == 'NORMAL' %}priority-normal{% else %}priority-low{% endif %}">
+                            {{ courrier.priorite.libelle }}
+                        </span>
+                    </span>
+                </div>
+
+                {% if courrier.date_echeance %}
+                <div class="info-row">
+                    <span class="info-label">Délai :</span>
+                    <span class="info-value">{{ courrier.date_echeance|date:"d/m/Y" }}</span>
+                </div>
+                {% endif %}
+
+                {% if courrier.agent_responsable %}
+                <div class="info-row">
+                    <span class="info-label">Agent :</span>
+                    <span class="info-value">{{ courrier.agent_responsable.nom_complet }}</span>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Call to Action -->
+            <div style="text-align: center;">
+                <a href="{{ request.build_absolute_uri }}/courriers/{{ courrier.id }}/" class="action-button">
+                    👁️ Consulter le courrier
+                </a>
+            </div>
+
+            <div class="divider"></div>
+
+            <p style="font-size: 13px; color: #666;">
+                <strong>À retenir :</strong> Veuillez traiter ce courrier dans les délais impartis. 
+                {% if courrier.est_en_retard %}
+                    <span style="color: #c53030;"><strong>⚠️ URGENT : Ce courrier a dépassé sa date limite !</strong></span>
+                {% elif courrier.jours_restants %}
+                    Vous avez {{ courrier.jours_restants }} jour(s) pour le traiter.
+                {% endif %}
+            </p>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p><strong>GED Courriers 🇳🇪</strong> | Ministère des Transports et de l'Aviation Civile</p>
+            <p>Ne répondez pas à cet email. Il a été envoyé automatiquement par le système.</p>
+            <p style="margin-top: 10px; font-size: 11px; opacity: 0.7;">© 2026 MINTRANSPORT. Tous droits réservés.</p>
+        </div>
+    </div>
+</body>
+</html>

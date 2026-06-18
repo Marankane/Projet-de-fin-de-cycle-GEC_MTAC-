@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content_public %}
+<div class="auth-wrapper">
+  
+  <div class="auth-card">
+    <div style="width:100%;max-width:420px;" class="card-header">
+      <div class="sidebar-header d-flex align-items-center gap-2">
+      <img src="{% static 'img/armoirie1.png' %}" alt="armoirie du niger" style="height: 60px; width: 60px; object-fit: contain;">
+      <div>
+        <div class="fw-bold tracking-tight">MINISTÈRE DES TRANSPORTS ET DE L'AVIATION CIVILE</div>
+      <small class="text-muted">GED-Courrier</small>
+      </div>
+  </div>
+      <h2 style="font-size:1rem;font-weight:700;color:#1c2b3a;margin-bottom:1.5rem;">Connexion à votre espace</h2>
+      {% if form.non_field_errors %}
+      <div class="alert alert-danger d-flex align-items-center gap-2 py-2">
+        <i class="bi bi-exclamation-triangle-fill flex-shrink-0"></i>
+        <div style="font-size:.875rem;">{{ form.non_field_errors.0 }}</div>
+      </div>
+      {% endif %}
+      {% if messages %}{% for m in messages %}
+      <div class="alert alert-info d-flex align-items-center gap-2 py-2"><i class="bi bi-info-circle-fill"></i><div style="font-size:.875rem;">{{ m }}</div></div>
+      {% endfor %}{% endif %}
+      <form method="post" novalidate>
+        {% csrf_token %}
+        <div class="mb-3">
+          <label class="form-label fw-semibold" style="font-size:.85rem;">Adresse e-mail</label>
+          <div class="input-group">
+            <span class="input-group-text bg-light border-end-0"><i class="bi bi-envelope text-secondary"></i></span>
+            <input type="email" name="email" class="form-control border-start-0 {% if form.email.errors %}is-invalid{% endif %}" value="{{ form.email.value|default:'' }}" placeholder="prenom.nom@mintransport.ne" autocomplete="email" autofocus>
+          </div>
+          {% if form.email.errors %}<div class="text-danger small mt-1">{{ form.email.errors.0 }}</div>{% endif %}
+        </div>
+        <div class="mb-4">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <label class="form-label fw-semibold mb-0" style="font-size:.85rem;">Mot de passe</label>
+            <a href="{% url 'accounts:demande_reinit' %}" style="font-size:.78rem;color:#1a4a7a;text-decoration:none;">Mot de passe oublié ?</a>
+          </div>
+          <div class="input-group">
+            <span class="input-group-text bg-light border-end-0"><i class="bi bi-lock text-secondary"></i></span>
+            <input type="password" name="mot_de_passe" id="pwd-field" class="form-control border-start-0 border-end-0 {% if form.mot_de_passe.errors %}is-invalid{% endif %}" placeholder="••••••••" autocomplete="current-password">
+            <button type="button" class="btn border-0 text-white" data-toggle-pwd="#pwd-field" tabindex="-1"><i class="bi bi-eye"></i></button>
+          </div>
+        </div>
+        <div class="form-check mb-4">
+          <input class="form-check-input" type="checkbox" name="se_souvenir" id="se_souvenir">
+          <label class="form-check-label" for="se_souvenir" style="font-size:.85rem;">Se souvenir de moi</label>
+        </div>
+        <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
+          <i class="bi bi-box-arrow-in-right me-2"></i>Se connecter
+        </button>
+      </form>
+    </div>
+    <p class="text-center mt-4" style="font-size:.72rem;color:#8fa0b0;">
+      <i class="bi bi-shield-lock-fill me-1"></i>Accès réservé au personnel autorisé. Toutes les connexions sont enregistrées.
+    </p>
+  </div>
+</div>
+<script src="{% static 'js/auth_bg.js' %}"></script>
+{% endblock %}

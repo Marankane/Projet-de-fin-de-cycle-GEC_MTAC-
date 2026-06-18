@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}{{ titre }} – GED{% endblock %}
+{% block breadcrumb %}<li class="breadcrumb-item"><a href="{% url 'accounts:liste_utilisateurs' %}" class="text-decoration-none">Utilisateurs</a></li><li class="breadcrumb-item active">{{ titre }}</li>{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+      <h1 class="h4 fw-bold text-primary-ged mb-0"><i class="bi bi-person-plus me-2"></i>{{ titre }}</h1>
+      <a href="{% url 'accounts:liste_utilisateurs' %}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left me-1"></i>Retour</a>
+    </div>
+    <div class="card-ged">
+      <div class="card-body">
+        <form method="post" novalidate>
+          {% csrf_token %}
+          <div class="row g-3">
+            <div class="col-md-6"><label class="form-label small fw-semibold form-label-req">Prénom</label>{{ form.prenom }}{% if form.prenom.errors %}<div class="text-danger small mt-1">{{ form.prenom.errors.0 }}</div>{% endif %}</div>
+            <div class="col-md-6"><label class="form-label small fw-semibold form-label-req">Nom</label>{{ form.nom }}{% if form.nom.errors %}<div class="text-danger small mt-1">{{ form.nom.errors.0 }}</div>{% endif %}</div>
+            <div class="col-12"><label class="form-label small fw-semibold form-label-req">Adresse e-mail</label>{{ form.email }}{% if form.email.errors %}<div class="text-danger small mt-1">{{ form.email.errors.0 }}</div>{% endif %}</div>
+            <div class="col-md-6"><label class="form-label small fw-semibold form-label-req">Rôle</label>{{ form.role }}</div>
+            <div class="col-md-6"><label class="form-label small fw-semibold">Service</label>{{ form.service }}{% if form.service.errors %}<div class="text-danger small mt-1">{{ form.service.errors.0 }}</div>{% endif %}</div>
+            <div class="col-md-6"><label class="form-label small fw-semibold">Téléphone</label>{{ form.telephone }}</div>
+            {% if form.mdp1 %}
+            <div class="col-md-6"><label class="form-label small fw-semibold form-label-req">Mot de passe</label>{{ form.mdp1 }}{% if form.mdp1.errors %}<div class="text-danger small mt-1">{{ form.mdp1.errors.0 }}</div>{% endif %}</div>
+            <div class="col-md-6"><label class="form-label small fw-semibold form-label-req">Confirmation</label>{{ form.mdp2 }}{% if form.mdp2.errors %}<div class="text-danger small mt-1">{{ form.mdp2.errors.0 }}</div>{% endif %}</div>
+            {% endif %}
+            {% if form.is_active %}<div class="col-md-6 d-flex align-items-end"><div class="form-check">{{ form.is_active }}<label class="form-check-label small fw-semibold" for="{{ form.is_active.id_for_label }}">Compte actif</label></div></div>{% endif %}
+            <div class="col-md-6 d-flex align-items-end"><div class="form-check">{{ form.notifier_par_email }}<label class="form-check-label small" for="{{ form.notifier_par_email.id_for_label }}">Notifications e-mail</label></div></div>
+          </div>
+          {% if form.non_field_errors %}<div class="alert alert-danger mt-3 py-2 small">{{ form.non_field_errors.0 }}</div>{% endif %}
+          <div class="d-flex gap-2 justify-content-end mt-4">
+            <a href="{% url 'accounts:liste_utilisateurs' %}" class="btn btn-outline-secondary">Annuler</a>
+            <button type="submit" class="btn btn-primary fw-semibold"><i class="bi bi-save me-2"></i>Enregistrer</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

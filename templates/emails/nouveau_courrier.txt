@@ -1,0 +1,53 @@
+GESTION ÉLECTRONIQUE DES COURRIERS - MINTRANSPORT
+==================================================
+
+Bonjour {{ utilisateur.prenom }} {{ utilisateur.nom }},
+
+Un nouveau courrier vous concerne et demande votre attention.
+
+─────────────────────────────────────────────────────
+
+📋 DÉTAILS DU COURRIER
+
+Numéro        : {{ courrier.numero }}
+Objet         : {{ courrier.objet }}
+Expéditeur    : {{ courrier.expediteur.nom }}
+Date Réception: {{ courrier.date_reception|date:"d/m/Y" }}
+Type          : {{ courrier.type_courrier.libelle }}
+Priorité      : {{ courrier.priorite.libelle }}
+{% if courrier.date_echeance %}Délai         : {{ courrier.date_echeance|date:"d/m/Y" }}
+{% endif %}{% if courrier.agent_responsable %}Agent         : {{ courrier.agent_responsable.nom_complet }}
+{% endif %}
+─────────────────────────────────────────────────────
+
+✅ ACTIONS REQUISES
+
+1. Consultez le courrier dès que possible
+2. Vérifiez la date limite (délai de traitement)
+3. Prenez les mesures nécessaires
+
+{% if courrier.est_en_retard %}
+⚠️ ATTENTION : Ce courrier a dépassé sa date limite !
+Délai dépassé de {{ courrier.est_en_retard }} jour(s)
+{% elif courrier.jours_restants %}
+Vous avez {{ courrier.jours_restants }} jour(s) pour le traiter.
+{% endif %}
+
+─────────────────────────────────────────────────────
+
+🔗 LIEN D'ACCÈS
+
+Cliquez sur le lien ci-dessous pour consulter le courrier :
+{{ request.build_absolute_uri }}/courriers/{{ courrier.id }}/
+
+Ou copiez-collez dans votre navigateur :
+http://127.0.0.1:8000/courriers/{{ courrier.id }}/
+
+─────────────────────────────────────────────────────
+
+ℹ️ INFORMATIONS
+
+Ne répondez pas à cet email. Il a été envoyé automatiquement par le système.
+
+© 2026 MINTRANSPORT - Ministère des Transports et de l'Aviation Civile 🇳🇪
+Tous droits réservés.

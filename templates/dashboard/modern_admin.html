@@ -1,0 +1,334 @@
+{% extends "base.html" %}
+{% block title %}Tableau de bord – GED{% endblock %}
+{% block content %}
+
+<!-- Hero Section -->
+<div class="hero-section mb-4">
+  <div class="hero-section-content">
+    <div class="d-flex align-items-center justify-content-between">
+      <div>
+        <h1 class="hero-title"><i class="bi bi-hand-index me-2"></i>Bienvenue, {{ user.prenom }}</h1>
+        <p class="hero-subtitle">{{ today|date:"l d F Y" }} · {{ user.get_role_display }}{% if user.service %} · {{ user.service.nom }}{% endif %}</p>
+      </div>
+      {% if 'admin' == 'agent' %}
+      <a href="{% url 'courriers:enregistrement' %}" class="btn btn-success btn-lg">
+        <i class="bi bi-plus-lg me-2"></i>Enregistrer un courrier
+      </a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Statistics KPIs -->
+{% if 'admin' == 'agent' %}
+<div class="row g-3 mb-4">
+  <div class="col-md-6 col-lg-3">
+    <div class="kpi-card kpi-orange">
+      <i class="bi bi-envelope kpi-icon text-warning"></i>
+      <div class="kpi-value">{{ total }}</div>
+      <div class="kpi-label">Mes courriers</div>
+    </div>
+  </div>
+  <div class="col-md-6 col-lg-3">
+    <div class="kpi-card kpi-blue">
+      <i class="bi bi-hourglass-split kpi-icon text-primary"></i>
+      <div class="kpi-value">{{ en_cours }}</div>
+      <div class="kpi-label">En cours</div>
+    </div>
+  </div>
+  <div class="col-md-6 col-lg-3">
+    <div class="kpi-card kpi-red">
+      <i class="bi bi-alarm-fill kpi-icon text-danger"></i>
+      <div class="kpi-value">{{ en_retard }}</div>
+      <div class="kpi-label">En retard</div>
+    </div>
+  </div>
+  <div class="col-md-6 col-lg-3">
+    <div class="kpi-card kpi-green">
+      <i class="bi bi-check2-circle kpi-icon text-success"></i>
+      <div class="kpi-value">{{ clotures_semaine }}</div>
+      <div class="kpi-label">Clôturés (7j)</div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-7">
+    <div class="card-ged">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span class="form-section-title"><i class="bi bi-list-task me-1"></i>Mes courriers en cours</span>
+        <a href="{% url 'courriers:liste' %}" class="small text-decoration-none">Voir tout →</a>
+      </div>
+      <div class="card-body p-0">
+        <table class="table mb-0">
+          <thead>
+            <tr>
+              <th class="ps-4">Numéro</th>
+              <th>Objet</th>
+              <th>Statut</th>
+              <th class="pe-4">Échéance</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for c in courriers_en_cours %}
+            <tr data-href="{% url 'courriers:detail' c.pk %}" style="cursor: pointer;">
+              <td class="ps-4 fw-semibold">{{ c.numero }}</td>
+              <td>{{ c.objet|truncatechars:50 }}</td>
+              <td><span class="badge bg-secondary">{{ c.statut.libelle }}</span></td>
+              <td class="pe-4 small {% if c.est_en_retard %}text-danger fw-bold{% endif %}">
+                {{ c.date_echeance|date:"d/m/Y"|default:"—" }}
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="4" class="text-center text-muted py-4">
+                <i class="bi bi-inbox fs-4 d-block mb-2"></i>
+                Aucun courrier en cours.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-lg-5">
+    <div class="card-ged">
+      <div class="card-header">
+        <span class="form-section-title"><i class="bi bi-activity me-1"></i>Activité récente</span>
+      </div>
+      <div class="list-group list-group-flush">
+        {% for m in activite %}
+        <a href="{% url 'courriers:detail' m.courrier.pk %}" class="list-group-item list-group-item-action border-0 py-3 px-4">
+          <div class="d-flex align-items-center gap-3">
+            <div class="rounded-circle flex-shrink-0" style="width:8px;height:8px;background:var(--color-orange-light);"></div>
+            <div>
+              <p class="mb-0 small fw-semibold">{{ m.get_action_display }}</p>
+              <p class="mb-0 text-muted" style="font-size:.75rem;">{{ m.courrier.numero }} · {{ m.date_mouvement|date:"d/m H:i" }}</p>
+            </div>
+          </div>
+        </a>
+        {% empty %}
+        <div class="list-group-item border-0 py-4 text-center text-muted small">
+          Aucune activité récente.
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+{% elif 'admin' == 'chef_service' %}
+<div class="row g-3 mb-4">
+  <div class="col-md-6 col-lg-3">
+    <div class="kpi-card kpi-orange">
+      <i class="bi bi-envelope-fill kpi-icon text-warning"></i>
+      <div class="kpi-value">{{ total }}</div>
+      <div class="kpi-label">Total service</div>
+    </div>
+  </div>
+  <div class="col-md-6 col-lg-3">
+    <div class="kpi-card kpi-blue">
+      <i class="bi bi-pencil-square kpi-icon text-primary"></i>
+      <div class="kpi-value">{{ a_instruire }}</div>
+      <div class="kpi-label">À instruire</div>
+    </div>
+  </div>
+  <div class="col-md-6 col-lg-3">
+    <div class="kpi-card kpi-green">
+      <i class="bi bi-check2-square kpi-icon text-success"></i>
+      <div class="kpi-value">{{ a_valider }}</div>
+      <div class="kpi-label">À valider</div>
+    </div>
+  </div>
+  <div class="col-md-6 col-lg-3">
+    <div class="kpi-card kpi-red">
+      <i class="bi bi-alarm-fill kpi-icon text-danger"></i>
+      <div class="kpi-value">{{ en_retard }}</div>
+      <div class="kpi-label">En retard</div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-4">
+    <div class="card-ged mb-4">
+      <div class="card-header">
+        <span class="form-section-title"><i class="bi bi-bar-chart-steps me-1"></i>Pipeline</span>
+      </div>
+      <div class="card-body">
+        {% for s in par_statut %}
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <span class="badge bg-secondary small">{{ s.statut__code }}</span>
+          <span class="text-muted small flex-fill mx-2">{{ s.statut__libelle }}</span>
+          <strong>{{ s.total }}</strong>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    
+    <div class="card-ged">
+      <div class="card-header">
+        <span class="form-section-title"><i class="bi bi-people me-1"></i>Agents</span>
+      </div>
+      <div class="list-group list-group-flush">
+        {% for a in agents %}
+        <div class="list-group-item border-0 py-3 px-4 d-flex align-items-center gap-3">
+          <div class="avatar-placeholder">{{ a.initiales }}</div>
+          <div class="flex-fill">
+            <p class="mb-0 small fw-semibold">{{ a.nom_complet }}</p>
+            <p class="mb-0 text-muted" style="font-size:.75rem;">{{ a.nb }} en cours</p>
+          </div>
+          <span class="badge rounded-pill bg-secondary">{{ a.nb }}</span>
+        </div>
+        {% empty %}
+        <div class="list-group-item border-0 py-3 text-center text-muted small">
+          Aucun agent.
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-lg-8">
+    <div class="card-ged">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span class="form-section-title"><i class="bi bi-pencil-square me-1"></i>À instruire</span>
+        <a href="{% url 'courriers:liste' %}" class="small text-decoration-none">Voir tout →</a>
+      </div>
+      <div class="card-body p-0">
+        <table class="table mb-0">
+          <thead>
+            <tr>
+              <th class="ps-4">Numéro</th>
+              <th>Objet</th>
+              <th>Priorité</th>
+              <th>Agent</th>
+              <th class="pe-4">Échéance</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for c in a_traiter %}
+            <tr data-href="{% url 'courriers:detail' c.pk %}" style="cursor: pointer;">
+              <td class="ps-4 fw-semibold">{{ c.numero }}</td>
+              <td>{{ c.objet|truncatechars:45 }}</td>
+              <td><span class="badge bg-secondary">{{ c.priorite.code }}</span></td>
+              <td class="text-muted small">{{ c.agent_responsable.nom_complet|default:"—" }}</td>
+              <td class="pe-4 small {% if c.est_en_retard %}text-danger fw-bold{% endif %}">
+                {{ c.date_echeance|date:"d/m/Y"|default:"—" }}
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="5" class="text-center text-muted py-4">
+                <i class="bi bi-check2-all text-success fs-4 d-block mb-2"></i>
+                Aucun courrier en attente.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% elif 'admin' == 'directeur' or 'admin' == 'admin' %}
+<div class="row g-3 mb-4">
+  <div class="col-md-6 col-lg-3">
+    <div class="kpi-card kpi-orange">
+      <i class="bi bi-envelope-fill kpi-icon text-warning"></i>
+      <div class="kpi-value">{{ total }}</div>
+      <div class="kpi-label">Total courriers</div>
+    </div>
+  </div>
+  <div class="col-md-6 col-lg-3">
+    <div class="kpi-card kpi-blue">
+      <i class="bi bi-hourglass-split kpi-icon text-primary"></i>
+      <div class="kpi-value">{{ ouverts }}</div>
+      <div class="kpi-label">En cours</div>
+    </div>
+  </div>
+  <div class="col-md-6 col-lg-3">
+    <div class="kpi-card kpi-red">
+      <i class="bi bi-exclamation-triangle-fill kpi-icon text-danger"></i>
+      <div class="kpi-value">{{ en_retard }}</div>
+      <div class="kpi-label">En retard</div>
+    </div>
+  </div>
+  <div class="col-md-6 col-lg-3">
+    <div class="kpi-card kpi-green">
+      <i class="bi bi-calendar-check kpi-icon text-success"></i>
+      <div class="kpi-value">{{ recus_mois }}</div>
+      <div class="kpi-label">Reçus ce mois</div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-8">
+    <div class="card-ged">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span class="form-section-title"><i class="bi bi-graph-up me-1"></i>Vue d'ensemble</span>
+        <a href="{% url 'courriers:liste' %}" class="small text-decoration-none">Gérer →</a>
+      </div>
+      <div class="card-body">
+        <p class="text-muted small mb-3">Dernières activités sur les courriers</p>
+        <table class="table table-sm mb-0">
+          <thead>
+            <tr>
+              <th>Numéro</th>
+              <th>Service</th>
+              <th>Statut</th>
+              <th>Priorité</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for c in a_traiter|slice:":5" %}
+            <tr>
+              <td class="fw-semibold">{{ c.numero }}</td>
+              <td>{{ c.service_destinataire.code|default:"—" }}</td>
+              <td><span class="badge bg-secondary">{{ c.statut.libelle }}</span></td>
+              <td><span class="badge bg-secondary">{{ c.priorite.code }}</span></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-lg-4">
+    <div class="card-ged">
+      <div class="card-header">
+        <span class="form-section-title"><i class="bi bi-lightning-fill me-1"></i>Statistiques rapides</span>
+      </div>
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
+          <span class="text-muted small">Taux de clôture</span>
+          <strong>85%</strong>
+        </div>
+        <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
+          <span class="text-muted small">Délai moyen</span>
+          <strong>2.5j</strong>
+        </div>
+        <div class="d-flex justify-content-between align-items-center">
+          <span class="text-muted small">Satisfaction</span>
+          <strong>92%</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<script>
+// Make table rows clickable
+document.querySelectorAll('table tbody tr[data-href]').forEach(row => {
+  row.addEventListener('click', function() {
+    window.location.href = this.dataset.href;
+  });
+});
+</script>
+{% endblock %}
