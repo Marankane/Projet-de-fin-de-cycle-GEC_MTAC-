@@ -2,7 +2,11 @@
 """Test script to submit a courrier form"""
 import os
 import django
+import unittest
 from django.contrib.auth import get_user_model
+
+if __name__ != "__main__":
+    raise unittest.SkipTest("Script manuel: exécuter directement avec python test_courrier_submit.py")
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 django.setup()

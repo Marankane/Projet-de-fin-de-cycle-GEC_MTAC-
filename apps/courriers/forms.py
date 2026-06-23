@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, timedelta
 from django import forms
 from django.db.models import Count
 from apps.accounts.models import Role
@@ -184,6 +184,8 @@ class EnregistrementForm(forms.ModelForm):
         except StatutCourrier.DoesNotExist as exc:
             raise forms.ValidationError("Le statut initial ENR est absent du paramétrage.") from exc
         if cree_par: c.cree_par=cree_par
+        if c.date_reception and c.priorite and not c.date_echeance:
+            c.date_echeance = c.date_reception + timedelta(days=c.priorite.delai_jours)
         if commit:
             c.save()
             self.save_m2m()

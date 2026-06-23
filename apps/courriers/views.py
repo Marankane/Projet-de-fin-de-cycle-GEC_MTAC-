@@ -45,33 +45,46 @@ def _qs(user):
     if user.peut_voir_tout or _acces_autorise(user): 
         return qs
     
-    if user.role in [Role.CHEF_SERVICE, Role.SECRETAIRE]: 
-        return qs.filter(service_destinataire=user.service)
-    return qs.filter(Q(service_destinataire=user.service)|Q(agent_responsable=user)|Q(cree_par=user))
+    if user.role in [Role.CHEF_SERVICE, Role.SECRETAIRE]:
+        return qs.filter(
+            Q(service_destinataire=user.service, confidentiel=False) |
+            Q(agent_responsable=user) |
+            Q(cree_par=user)
+        )
+    return qs.filter(
+        Q(service_destinataire=user.service, confidentiel=False) |
+        Q(agent_responsable=user) |
+        Q(cree_par=user)
+    )
 
 def _acces(user, courrier):
     # Accès total pour la direction et l'agent courrier (outrepasse le flag confidentiel)
     if user.peut_voir_tout or _acces_autorise(user): 
         return True
     
+    if courrier.agent_responsable_id == user.id or courrier.cree_par_id == user.id:
+        return True
     if courrier.confidentiel: 
         return False
     if user.role in [Role.CHEF_SERVICE, Role.SECRETAIRE]: 
         return courrier.service_destinataire == user.service
     return courrier.service_destinataire == user.service or courrier.agent_responsable == user or courrier.cree_par == user
 
+def _require_acces(user, courrier):
+    if not _acces(user, courrier):
+        raise PermissionDenied
+
 def _peut_fichier_transmission(user):
     # Seul l'agent courrier peut gérer le fichier de transmission
     return user.est_admin or user.role == Role.AGENT
 
-class ListeCourrierView(AgentMixin, ListView):
+class ListeCourrierView(LoginRequiredMixin, ListView):
     template_name = 'courriers/liste.html'
     context_object_name = 'courriers'
     paginate_by = 25
 
     def get_queryset(self):
-        # Seuls les agents courriers voient tous les courriers
-        qs = Courrier.objects.select_related('statut','priorite','type_courrier','expediteur','service_destinataire','agent_responsable','cree_par').prefetch_related('pieces_jointes')
+        qs = _qs(self.request.user)
         f = RechercheForm(self.request.GET)
         if f.is_valid():
             d = f.cleaned_data
@@ -90,21 +103,22 @@ class ListeCourrierView(AgentMixin, ListView):
         ctx = super().get_context_data(**kwargs)
         ctx['form_recherche'] = RechercheForm(self.request.GET)
         ctx['total'] = self.get_queryset().count()
+        ctx['peut_filtrer_service'] = self.request.user.peut_voir_tout or _acces_autorise(self.request.user)
         return ctx
 
-class EnregistrementView(AgentMixin, View):
+class EnregistrementView(LoginRequiredMixin, View):
     template_name = 'courriers/enregistrement.html'
-    def _ctx(self, form=None, form_pj=None):
-        return {'form': form or EnregistrementForm(), 'form_pj': form_pj or PieceJointeForm(), 'priorites_delais': {str(p.pk): p.delai_jours for p in Priorite.objects.all()}}
-    def get(self, request): return render(request, self.template_name, self._ctx())
+    def _ctx(self, request, form=None, form_pj=None):
+        return {'form': form or EnregistrementForm(user=request.user), 'form_pj': form_pj or PieceJointeForm(), 'priorites_delais': {str(p.pk): p.delai_jours for p in Priorite.objects.all()}}
+    def get(self, request): return render(request, self.template_name, self._ctx(request))
     def post(self, request):
-        form = EnregistrementForm(request.POST)
+        form = EnregistrementForm(request.POST, user=request.user)
         form_pj = PieceJointeForm(request.POST, request.FILES)
         if form.is_valid():
             agent_courrier = _agent_courrier_auto(request.user)
             if not agent_courrier:
                 form.add_error(None, "Aucun agent courrier actif n'est disponible pour recevoir ce courrier.")
-                return render(request, self.template_name, self._ctx(form, form_pj))
+                return render(request, self.template_name, self._ctx(request, form, form_pj))
 
             courrier = form.save(cree_par=request.user)
             courrier.agent_responsable = agent_courrier
@@ -119,12 +133,13 @@ class EnregistrementView(AgentMixin, View):
                 MouvementCourrier.objects.create(courrier=courrier, utilisateur=request.user, service=request.user.service, action='PJ_AJOUT', commentaire=f"Fichier : {pj.nom_fichier}")
             messages.success(request, f"Courrier {courrier.numero} enregistré et envoyé à l'agent courrier {agent_courrier.nom_complet}.")
             return redirect('courriers:detail', pk=courrier.pk)
-        return render(request, self.template_name, self._ctx(form, form_pj))
+        return render(request, self.template_name, self._ctx(request, form, form_pj))
 
-class DetailCourrierView(AgentMixin, View):
+class DetailCourrierView(LoginRequiredMixin, View):
     def get(self, request, pk):
         # Seuls les agents courriers peuvent ouvrir les courriers
         courrier = get_object_or_404(Courrier.objects.select_related('statut','priorite','type_courrier','expediteur','destinataire','service_destinataire','cree_par','agent_responsable').prefetch_related('pieces_jointes','mouvements__utilisateur'), pk=pk)
+        _require_acces(request.user, courrier)
         ctx = {
             'courrier': courrier,
             'mouvements': courrier.mouvements.select_related('utilisateur','service').order_by('-date_mouvement'),

@@ -3,7 +3,11 @@
 import urllib.request
 import urllib.parse
 import http.cookiejar
+import unittest
 from html.parser import HTMLParser
+
+if __name__ != "__main__":
+    raise unittest.SkipTest("Script manuel: exécuter directement avec python test_http_submit.py")
 
 BASE_URL = 'http://127.0.0.1:8000'
 
